@@ -461,9 +461,9 @@
     margin-top: 10px;
   }
   .info-banner summary {
-    font-weight: 600; font-size: 14px; color: var(--amber); cursor: pointer; user-select: none;
+    font-weight: 700; font-size: 14px; color: var(--amber); cursor: pointer; user-select: none;
   }
-  .info-banner p { color: var(--text-dim); font-size: 13px; line-height: 1.6; margin: 12px 0; }
+  .info-banner p { color: var(--text-dim); font-size: 13px; line-height: 1.6; margin: 12px 0 8px; }
   .schema-card {
     background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-m); padding: 14px 18px; margin-top: 10px;
   }
@@ -1552,14 +1552,14 @@
 
     if(npLogo && dialWrap){
       if(station.favicon){
-        npLogo.innerHTML = `<img src="${escapeHtml(station.favicon)}" alt="${escapeHtml(station.name)}" onerror="this.parentElement.textContent='${initials(station.name)}'">`;
+        npLogo.innerHTML = `<img src="${escapeHtml(station.favicon)}" alt="${escapeHtml(station.name)}" onerror="this.parentElement.style.display='none'; document.getElementById('dialWrap').style.display='block';">`;
+        npLogo.style.display = "flex";
+        dialWrap.style.display = "none";
       } else {
         npLogo.textContent = initials(station.name);
+        npLogo.style.display = "flex";
+        dialWrap.style.display = "none";
       }
-      npLogo.style.display = "flex";
-      // Mobilde dial (kadran) gizlenebilir ama masaüstünde logonun yanında kadran da durabilir.
-      const isMobile = window.innerWidth <= 860;
-      dialWrap.style.display = isMobile ? "none" : "block";
     }
 
     updateNpFavButton();
