@@ -488,8 +488,17 @@
   }
 
   .player-left {
-    display: flex; align-items: center; gap: 16px; min-width: 240px; max-width: 320px;
+    display: flex; align-items: center; gap: 16px; min-width: 240px; max-width: 340px;
   }
+  .np-logo {
+    width: 52px; height: 52px; border-radius: var(--radius-m);
+    background: var(--surface-3); border: 1px solid var(--border);
+    display: none; align-items: center; justify-content: center;
+    overflow: hidden; flex: none; font-family: var(--font-display);
+    font-size: 15px; font-weight: 700; color: var(--amber);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .np-logo img { width: 100%; height: 100%; object-fit: cover; }
   .dial-wrap { flex: none; position: relative; }
   .dial { width: 56px; height: 56px; }
   .dial-arc { fill: none; stroke: var(--border); stroke-width: 2.5; }
@@ -802,7 +811,8 @@
   <!-- ================= FIXED BOTTOM PLAYER ================= -->
   <footer class="player-bar" id="playerBar">
     <div class="player-left">
-      <div class="dial-wrap">
+      <div class="np-logo" id="npLogo"></div>
+      <div class="dial-wrap" id="dialWrap">
         <svg class="dial" id="dial" viewBox="0 0 150 150">
           <path class="dial-arc" d="M 20 110 A 60 60 0 1 1 130 110"></path>
           <g id="dialTicks"></g>
@@ -1497,6 +1507,9 @@
     npStatusText.textContent = state.isPlaying ? "YAYINDA" : (state.isLoading ? "BAĞLANIYOR" : "DURAKLATILDI");
   }
 
+  const npLogo = $("npLogo");
+  const dialWrap = $("dialWrap");
+
   function updateNowPlaying(station){
     if(!station){
       npName.textContent = "Bir istasyon seç";
@@ -1505,11 +1518,23 @@
       npStatus.classList.remove("on-air");
       playBtn.disabled = true;
       stopBtn.disabled = true;
+      if(npLogo) npLogo.style.display = "none";
+      if(dialWrap) dialWrap.style.display = "block";
       updateNpFavButton();
       return;
     }
     npName.textContent = station.name;
     npSub.textContent = [station.genre, station.country].filter(Boolean).join(" · ") || station.url;
+
+    if(station.favicon && npLogo && dialWrap){
+      npLogo.innerHTML = `<img src="${escapeHtml(station.favicon)}" alt="${escapeHtml(station.name)}" onerror="this.parentElement.style.display='none'; document.getElementById('dialWrap').style.display='block';">`;
+      npLogo.style.display = "flex";
+      dialWrap.style.display = "none";
+    } else {
+      if(npLogo) npLogo.style.display = "none";
+      if(dialWrap) dialWrap.style.display = "block";
+    }
+
     updateNpFavButton();
   }
 
