@@ -1673,28 +1673,32 @@
     if(!station) return;
     state.activeId = id;
     state.isLoading = true;
+    state.isPlaying = false;
     updateNowPlaying(station);
-    setStatus("Bağlanılıyor…");
+    setStatus("Bağlanılıyor… (" + station.name + ")");
     audioEl.src = station.url;
     audioEl.volume = volumeSlider.value/100;
     playBtn.disabled = false;
     stopBtn.disabled = false;
     playBtn.classList.add("loading");
+    updateTransportUI();
+    
     const playPromise = audioEl.play();
     if(playPromise && playPromise.catch){
       playPromise.catch(err=>{
         state.isLoading = false;
         state.isPlaying = false;
         playBtn.classList.remove("loading");
-        setStatus("Yayına bağlanılamadı.", true);
+        setStatus("⚠️ '" + station.name + "' yayınına bağlanılamadı. Yayın çevrimdışı veya URL hatalı olabilir.", true);
         updateTransportUI();
       });
     }
-    renderList();
   }
 
   const ICON_PLAY = `<path d="M8 5v14l11-7z"/>`;
   const ICON_PAUSE = `<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>`;
+  const CARD_PLAY_ICON = `<svg width="14" height="14" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
+  const CARD_PAUSE_ICON = `<svg width="14" height="14" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
   const FAV_ICON = `<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/>`;
 
   audioEl.addEventListener("playing", ()=>{
@@ -1702,41 +1706,49 @@
     playBtn.classList.remove("loading");
     setStatus("");
     updateTransportUI();
-    // Only update transport badge if active card exists without full list DOM re-render
-    const activeCard = stationListEl.querySelector(".station-card.active");
-    if(activeCard) {
-      activeCard.classList.add("is-playing");
-      const badge = activeCard.querySelector(".station-playing-badge");
-      if(badge) badge.innerHTML = `<span class="badge-dot"></span>YAYINDA`;
+  });
+  audioEl.addEventListener("waiting", ()=>{
+    if(state.isPlaying || state.isLoading){
+      setStatus("Arabelleğe alınıyor…");
     }
   });
   audioEl.addEventListener("pause", ()=>{
     if(audioEl.ended || audioEl.paused){
       state.isPlaying = false;
+      state.isLoading = false;
+      playBtn.classList.remove("loading");
       updateTransportUI();
-      const activeCard = stationListEl.querySelector(".station-card.active");
-      if(activeCard) {
-        activeCard.classList.remove("is-playing");
-        const badge = activeCard.querySelector(".station-playing-badge");
-        if(badge) badge.innerHTML = `<span class="badge-dot"></span>SEÇİLDİ`;
-      }
     }
   });
   audioEl.addEventListener("stalled", ()=>{
-    if(state.isPlaying) setStatus("Arabelleğe alınıyor…");
+    if(state.isPlaying) setStatus("Yayın yavaş, bekleniyor…");
   });
   audioEl.addEventListener("error", ()=>{
+    const current = state.activeId ? findStation(state.activeId) : null;
+    const name = current ? current.name : "İstasyon";
     state.isPlaying = false; state.isLoading = false;
     playBtn.classList.remove("loading");
-    setStatus("Yayına ulaşılamıyor.", true);
+    setStatus("⚠️ '" + name + "' akışına bağlanılamadı (Çevrimdışı / Bağlantı hatası).", true);
     updateTransportUI();
-    renderList();
   });
 
   function togglePlay(){
     if(!state.activeId) return;
-    if(state.isPlaying) audioEl.pause();
-    else audioEl.play().catch(()=> setStatus("Yayına bağlanılamadı.", true));
+    const station = findStation(state.activeId);
+    if(state.isPlaying){
+      audioEl.pause();
+    } else {
+      state.isLoading = true;
+      playBtn.classList.add("loading");
+      setStatus("Bağlanılıyor…");
+      audioEl.play().catch(err => {
+        state.isLoading = false;
+        state.isPlaying = false;
+        playBtn.classList.remove("loading");
+        setStatus("⚠️ '" + (station?station.name:"Yayın") + "' canlı akışı başlatılamadı.", true);
+        updateTransportUI();
+      });
+    }
   }
 
   function stopPlayback(){
@@ -1749,7 +1761,6 @@
     updateNowPlaying(null);
     updateTransportUI();
     setStatus("");
-    renderList();
   }
 
   playBtn.addEventListener("click", togglePlay);
@@ -1760,7 +1771,39 @@
     eqEl.classList.toggle("active", state.isPlaying);
     dialEl.classList.toggle("is-playing", state.isPlaying);
     npStatus.classList.toggle("on-air", state.isPlaying);
-    npStatusText.textContent = state.isPlaying ? "YAYINDA" : (state.isLoading ? "BAĞLANIYOR" : "DURAKLATILDI");
+    npStatusText.textContent = state.isPlaying ? "YAYINDA" : (state.isLoading ? "BAĞLANIYOR" : (state.activeId ? "DURAKLATILDI" : "YAYIN YOK"));
+
+    // Sync all card states in DOM dynamically
+    stationListEl.querySelectorAll(".station-card").forEach(card => {
+      const id = card.dataset.id;
+      const isActive = id === state.activeId;
+      const isPlayingCurrent = isActive && state.isPlaying;
+
+      card.classList.toggle("active", isActive);
+      card.classList.toggle("is-playing", isPlayingCurrent);
+
+      const badge = card.querySelector(".station-playing-badge");
+      if(isActive){
+        if(!badge){
+          // if badge wasn't rendered yet
+          const footer = card.querySelector(".station-card-footer") || card;
+          const newBadge = document.createElement("span");
+          newBadge.className = "station-playing-badge";
+          newBadge.innerHTML = `<span class="badge-dot"></span>${isPlayingCurrent ? "YAYINDA" : "SEÇİLDİ"}`;
+          footer.insertBefore(newBadge, footer.firstChild);
+        } else {
+          badge.innerHTML = `<span class="badge-dot"></span>${isPlayingCurrent ? "YAYINDA" : "SEÇİLDİ"}`;
+        }
+      } else if(badge){
+        badge.remove();
+      }
+
+      const cardPlayBtn = card.querySelector(".card-play-btn");
+      if(cardPlayBtn){
+        cardPlayBtn.innerHTML = isPlayingCurrent ? CARD_PAUSE_ICON : CARD_PLAY_ICON;
+        cardPlayBtn.title = isPlayingCurrent ? "Duraklat" : "Dinle";
+      }
+    });
   }
 
   const npLogo = $("npLogo");
