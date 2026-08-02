@@ -8,23 +8,13 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  /* ============================================================
-     TOKENS
-     Palette   : gece stüdyosu — kömür lacivert zemin, amber kadran
-                 ışığı, yeşil "yayında" LED'i.
-     Tipografi : Frekans göstergeleri IBM Plex Mono (teknik/dijital),
-                 arayüz metni Inter (temiz/okunaklı).
-     İmza öğesi: Analog radyo kadranı — çalarken ibre titreşir,
-                 eşlik eden ekolayzer çubukları nabız gibi atar.
-     ============================================================ */
   :root{
-    --bg: #10131a;
-    --bg-grain: #0c0e13;
-    --surface: #171b24;
-    --surface-2: #1e232f;
-    --surface-3: #262c3a;
-    --border: #2a3040;
-    --border-soft: #232837;
+    --bg: #0d1017;
+    --surface: #151923;
+    --surface-2: #1c2230;
+    --surface-3: #252d3f;
+    --border: #2a3347;
+    --border-soft: #202736;
     --text: #eae7df;
     --text-dim: #9aa0b0;
     --text-faint: #5b6274;
@@ -40,377 +30,536 @@
     --shadow: 0 12px 32px rgba(0,0,0,0.45);
     --font-display: 'IBM Plex Mono', monospace;
     --font-body: 'Inter', -apple-system, sans-serif;
+    --player-height: 96px;
   }
 
   *{ box-sizing: border-box; }
-  html,body{ height:100%; }
+  html, body{ height: 100%; margin: 0; }
   body{
-    margin:0;
     background:
-      radial-gradient(1200px 700px at 15% -10%, rgba(232,163,61,0.06), transparent 60%),
-      radial-gradient(900px 600px at 100% 0%, rgba(61,220,132,0.04), transparent 55%),
+      radial-gradient(1200px 700px at 50% -10%, rgba(232,163,61,0.08), transparent 60%),
+      radial-gradient(900px 600px at 90% 100%, rgba(61,220,132,0.04), transparent 55%),
       var(--bg);
     color: var(--text);
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
   }
 
   ::selection{ background: var(--amber); color:#1a1200; }
-
   ::-webkit-scrollbar{ width:8px; height:8px; }
   ::-webkit-scrollbar-track{ background:transparent; }
   ::-webkit-scrollbar-thumb{ background: var(--surface-3); border-radius:8px; }
   ::-webkit-scrollbar-thumb:hover{ background: var(--border); }
 
-  .app{
-    display:grid;
-    grid-template-columns: 380px 1fr;
-    min-height:100vh;
+  .app-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding-bottom: var(--player-height);
   }
 
-  /* ---------- Sidebar ---------- */
-  .sidebar{
+  /* ---------- Header / Top Bar ---------- */
+  .header {
     background: var(--surface);
-    border-right:1px solid var(--border-soft);
-    display:flex;
-    flex-direction:column;
-    min-width:0;
+    border-bottom: 1px solid var(--border-soft);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    backdrop-filter: blur(12px);
   }
 
-  .brand{
-    padding:22px 20px 16px;
-    border-bottom:1px solid var(--border-soft);
-  }
-  .brand-mark{
-    display:flex; align-items:center; gap:10px;
+  .brand-mark {
+    display: flex; align-items: center; gap: 10px;
     font-family: var(--font-display);
-    font-weight:600; font-size:13px; letter-spacing:.14em;
-    color: var(--amber);
-    text-transform:uppercase;
+    font-weight: 700; font-size: 15px; letter-spacing: .12em;
+    color: var(--amber); text-transform: uppercase; text-decoration: none;
   }
-  .brand-mark .dot{
-    width:8px; height:8px; border-radius:50%;
+  .brand-mark .dot {
+    width: 9px; height: 9px; border-radius: 50%;
     background: var(--amber);
     box-shadow: 0 0 10px 2px var(--amber-glow);
   }
-  .brand h1{
-    margin:8px 0 2px;
-    font-size:21px; font-weight:800; letter-spacing:-0.01em;
-  }
-  .brand p{
-    margin:0; font-size:12.5px; color: var(--text-dim);
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    max-width: 600px;
+    justify-content: flex-end;
   }
 
-  .toolbar{
-    padding:14px 16px;
-    display:flex; gap:8px;
-    border-bottom:1px solid var(--border-soft);
-  }
-  .search{
-    flex:1;
-    display:flex; align-items:center; gap:8px;
+  .search {
+    flex: 1;
+    max-width: 380px;
+    display: flex; align-items: center; gap: 8px;
     background: var(--surface-2);
-    border:1px solid var(--border);
+    border: 1px solid var(--border);
     border-radius: var(--radius-m);
-    padding:9px 12px;
+    padding: 8px 12px;
+    transition: border-color .15s ease;
   }
-  .search svg{ flex:none; opacity:.55; }
-  .search input{
-    flex:1; background:none; border:none; outline:none;
-    color: var(--text); font-family: var(--font-body); font-size:13.5px;
+  .search:focus-within { border-color: var(--amber-dim); }
+  .search svg { flex: none; opacity: .55; }
+  .search input {
+    flex: 1; background: none; border: none; outline: none;
+    color: var(--text); font-family: var(--font-body); font-size: 13.5px;
   }
-  .search input::placeholder{ color: var(--text-faint); }
+  .search input::placeholder { color: var(--text-faint); }
 
-  .btn{
+  .btn {
     font-family: var(--font-body);
-    font-weight:600;
-    font-size:13px;
+    font-weight: 600;
+    font-size: 13px;
     border-radius: var(--radius-m);
-    border:1px solid var(--border);
+    border: 1px solid var(--border);
     background: var(--surface-2);
     color: var(--text);
-    cursor:pointer;
-    padding:9px 14px;
-    display:inline-flex; align-items:center; gap:7px;
+    cursor: pointer;
+    padding: 8px 14px;
+    display: inline-flex; align-items: center; gap: 7px;
     transition: border-color .15s ease, transform .1s ease, background .15s ease;
+    white-space: nowrap;
   }
-  .btn:hover{ border-color: var(--amber-dim); background: var(--surface-3); }
-  .btn:active{ transform: translateY(1px); }
-  .btn-primary{
+  .btn:hover { border-color: var(--amber-dim); background: var(--surface-3); }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary {
     background: var(--amber);
     border-color: var(--amber);
-    color:#1a1200;
+    color: #1a1200;
   }
-  .btn-primary:hover{ background:#f3ae4c; border-color:#f3ae4c; }
-  .btn-ghost{ background:none; border-color:transparent; padding:8px 10px; }
-  .btn-ghost:hover{ background: var(--surface-2); border-color: var(--border); }
-  .btn-danger{ color: var(--red); }
-  .btn-danger:hover{ border-color: var(--red); }
-  .btn-block{ width:100%; justify-content:center; }
-  .btn[disabled]{ opacity:.5; cursor:not-allowed; pointer-events:none; }
+  .btn-primary:hover { background: #f3ae4c; border-color: #f3ae4c; }
+  .btn-ghost { background: none; border-color: transparent; padding: 8px 10px; }
+  .btn-ghost:hover { background: var(--surface-2); border-color: var(--border); }
+  .btn-danger { color: var(--red); }
+  .btn-danger:hover { border-color: var(--red); }
+  .btn-block { width: 100%; justify-content: center; }
+  .btn[disabled] { opacity: .5; cursor: not-allowed; pointer-events: none; }
 
-  .filter-tabs{
-    display:flex; gap:6px;
-    padding:12px 16px 0;
+  /* ---------- Settings Dropdown Menu ---------- */
+  .settings-menu-wrap {
+    position: relative;
   }
-  .filter-tab{
-    flex:1;
-    display:flex; align-items:center; justify-content:center; gap:6px;
-    font-family: var(--font-body); font-weight:600; font-size:12px;
-    padding:8px 10px;
+  .settings-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 240px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    box-shadow: var(--shadow);
+    padding: 6px;
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 120;
+  }
+  .settings-dropdown.open {
+    display: flex;
+    animation: dropdownFade .15s ease-out;
+  }
+  @keyframes dropdownFade {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    background: none;
+    border: none;
     border-radius: var(--radius-s);
-    border:1px solid var(--border);
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    transition: background .12s ease, color .12s ease;
+  }
+  .dropdown-item:hover {
+    background: var(--surface-2);
+    color: var(--amber);
+  }
+  .dropdown-item.danger {
+    color: var(--text-dim);
+  }
+  .dropdown-item.danger:hover {
+    background: rgba(224,85,90,0.12);
+    color: var(--red);
+  }
+  .dropdown-divider {
+    height: 1px;
+    background: var(--border-soft);
+    margin: 4px 0;
+  }
+
+  /* ---------- Main Central Area ---------- */
+  .main-content {
+    flex: 1;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .controls-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    background: var(--surface);
+    padding: 12px 16px;
+    border-radius: var(--radius-l);
+    border: 1px solid var(--border-soft);
+  }
+
+  .filter-tabs {
+    display: flex; gap: 6px;
+  }
+  .filter-tab {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    font-family: var(--font-body); font-weight: 600; font-size: 12.5px;
+    padding: 7px 14px;
+    border-radius: var(--radius-s);
+    border: 1px solid var(--border);
     background: var(--surface-2);
     color: var(--text-dim);
-    cursor:pointer;
-    transition: border-color .12s ease, color .12s ease, background .12s ease;
+    cursor: pointer;
+    transition: all .12s ease;
   }
-  .filter-tab:hover{ color: var(--text); }
-  .filter-tab.active{
-    background: rgba(232,163,61,0.1);
+  .filter-tab:hover { color: var(--text); border-color: var(--amber-dim); }
+  .filter-tab.active {
+    background: rgba(232,163,61,0.12);
     border-color: var(--amber-dim);
     color: var(--amber);
   }
-  .filter-tab svg{ opacity:.85; }
 
-  .station-count{
-    padding:10px 16px 4px;
+  .controls-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .station-count {
     font-family: var(--font-display);
-    font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+    font-size: 12px; letter-spacing: .05em; text-transform: uppercase;
     color: var(--text-faint);
-    display:flex; align-items:center; justify-content:space-between;
+    display: flex; align-items: center; gap: 8px;
   }
-  .station-count .drag-hint{ text-transform:none; letter-spacing:0; font-family: var(--font-body); opacity:.7; }
+  .station-count .drag-hint { text-transform: none; font-family: var(--font-body); opacity: .7; font-size: 11px; }
 
-  .station-list{
-    flex:1; overflow-y:auto;
-    padding:6px 10px 16px;
-    display:flex; flex-direction:column; gap:4px;
+  .view-switcher {
+    display: flex;
+    background: var(--surface-2);
+    padding: 3px;
+    border-radius: var(--radius-s);
+    border: 1px solid var(--border);
+  }
+  .view-btn {
+    background: none;
+    border: none;
+    padding: 5px 8px;
+    border-radius: 4px;
+    color: var(--text-dim);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .12s ease;
+  }
+  .view-btn:hover { color: var(--text); }
+  .view-btn.active {
+    background: var(--surface-3);
+    color: var(--amber);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   }
 
-  .station-card{
-    display:flex; align-items:center; gap:10px;
-    padding:9px 10px;
+  /* ---------- Station List Styles ---------- */
+  .station-list-container {
+    flex: 1;
+  }
+
+  /* GRID VIEW */
+  .station-list.view-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 16px;
+  }
+  .view-grid .station-card {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-l);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    cursor: pointer;
+    transition: all .18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .view-grid .station-card:hover {
+    background: var(--surface-2);
+    border-color: var(--border);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+  .view-grid .station-card.active {
+    background: linear-gradient(145deg, var(--surface-2), rgba(232,163,61,0.08));
+    border-color: var(--amber);
+    box-shadow: 0 0 15px rgba(232,163,61,0.15);
+  }
+  .view-grid .station-top {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 12px;
+  }
+  .view-grid .station-top-actions {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .view-grid .station-logo {
+    width: 48px; height: 48px; border-radius: var(--radius-m);
+    background: var(--surface-3);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; font-family: var(--font-display); font-size: 14px; font-weight: 700;
+    color: var(--amber); border: 1px solid var(--border); flex: none;
+  }
+  .view-grid .station-logo img { width: 100%; height: 100%; object-fit: cover; }
+  .view-grid .station-meta { min-width: 0; margin-bottom: 8px; }
+  .view-grid .station-name {
+    font-size: 15px; font-weight: 700; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px;
+  }
+  .view-grid .station-sub {
+    font-size: 12px; color: var(--text-dim);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .view-grid .station-card-footer {
+    margin-top: auto; display: flex; align-items: center; justify-content: space-between; padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+  }
+
+  /* LIST VIEW */
+  .station-list.view-list {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .view-list .station-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px;
+    background: var(--surface);
     border-radius: var(--radius-m);
-    border:1px solid transparent;
-    cursor:pointer;
-    position:relative;
-    transition: background .12s ease, border-color .12s ease, opacity .12s ease;
+    border: 1px solid var(--border-soft);
+    cursor: pointer; position: relative;
+    transition: background .12s ease, border-color .12s ease;
   }
-  .station-card:hover{ background: var(--surface-2); }
-  .station-card.active{
+  .view-list .station-card:hover { background: var(--surface-2); border-color: var(--border); }
+  .view-list .station-card.active {
     background: linear-gradient(90deg, rgba(232,163,61,.14), rgba(232,163,61,.03));
     border-color: var(--amber-dim);
   }
-  .station-card.dragging{ opacity:.35; }
-  .station-card.drag-over{ border-color: var(--amber); box-shadow: inset 0 2px 0 var(--amber); }
-
-  .drag-handle{
-    flex:none; width:14px; display:flex; align-items:center; justify-content:center;
-    color: var(--text-faint); cursor:grab; opacity:0; transition:opacity .12s;
-    letter-spacing:2px; font-size:13px; line-height:1;
+  .view-list .station-logo {
+    width: 36px; height: 36px; border-radius: var(--radius-s);
+    background: var(--surface-3); display: flex; align-items: center; justify-content: center;
+    overflow: hidden; font-family: var(--font-display); font-size: 12px; font-weight: 600;
+    color: var(--text-dim); border: 1px solid var(--border-soft); flex: none;
   }
-  .station-card:hover .drag-handle{ opacity:1; }
-  .drag-handle:active{ cursor:grabbing; }
-
-  .fav-btn{
-    color: var(--text-faint);
-    opacity:0;
-    transition: opacity .12s ease, color .12s ease;
+  .view-list .station-logo img { width: 100%; height: 100%; object-fit: cover; }
+  .view-list .station-meta { flex: 1; min-width: 0; }
+  .view-list .station-name {
+    font-size: 14px; font-weight: 600; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .fav-btn svg{ display:block; }
-  .fav-btn.is-fav{ color: var(--amber); opacity:1; }
-  .fav-btn.is-fav svg{ fill: var(--amber); }
-  .station-card:hover .fav-btn{ opacity:1; }
-
-  .station-logo{
-    flex:none; width:38px; height:38px; border-radius: var(--radius-s);
-    background: var(--surface-3);
-    display:flex; align-items:center; justify-content:center;
-    overflow:hidden; font-family: var(--font-display); font-size:13px;
-    color: var(--text-dim); border:1px solid var(--border-soft);
-  }
-  .station-logo img{ width:100%; height:100%; object-fit:cover; }
-
-  .station-meta{ flex:1; min-width:0; }
-  .station-name{
-    font-size:13.5px; font-weight:600; color: var(--text);
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  }
-  .station-sub{
-    font-size:11.5px; color: var(--text-faint);
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    margin-top:1px;
+  .view-list .station-sub {
+    font-size: 12px; color: var(--text-faint);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px;
   }
 
-  .station-actions{ flex:none; display:flex; align-items:center; gap:2px; opacity:0; transition:opacity .12s; }
-  .station-card:hover .station-actions{ opacity:1; }
+  /* Shared Card Elements */
+  .station-card.dragging { opacity: .35; }
+  .station-card.drag-over { border-color: var(--amber); box-shadow: inset 0 2px 0 var(--amber); }
 
-  .station-playing-icon{
-    flex:none; width:16px; display:none; align-items:center; justify-content:center;
+  .drag-handle {
+    flex: none; width: 14px; display: flex; align-items: center; justify-content: center;
+    color: var(--text-faint); cursor: grab; opacity: 0; transition: opacity .12s;
+    letter-spacing: 2px; font-size: 13px; line-height: 1;
   }
-  .station-card.active .station-playing-icon{ display:flex; }
+  .station-card:hover .drag-handle { opacity: 1; }
+  .drag-handle:active { cursor: grabbing; }
 
-  .empty-state{
-    margin:24px 16px; padding:22px 16px;
-    border:1px dashed var(--border);
-    border-radius: var(--radius-m);
-    text-align:center; color: var(--text-dim); font-size:13px;
+  .fav-btn {
+    color: var(--text-faint); opacity: 0.6; transition: opacity .12s ease, color .12s ease; background: none; border: none; cursor: pointer; padding: 4px;
+  }
+  .fav-btn svg { display: block; }
+  .fav-btn.is-fav { color: var(--amber); opacity: 1; }
+  .fav-btn.is-fav svg { fill: var(--amber); }
+  .station-card:hover .fav-btn { opacity: 1; }
+
+  .station-actions { flex: none; display: flex; align-items: center; gap: 4px; }
+  .station-playing-icon {
+    flex: none; width: 16px; display: none; align-items: center; justify-content: center;
+  }
+  .station-card.active .station-playing-icon { display: flex; }
+
+  .empty-state {
+    padding: 48px 24px;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-l);
+    text-align: center; color: var(--text-dim); font-size: 14px;
   }
 
-  .sidebar-footer{
-    padding:12px 16px; border-top:1px solid var(--border-soft);
+  /* Info Banner Section */
+  .info-banner {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-l);
+    padding: 20px 24px;
+    margin-top: 10px;
+  }
+  .info-banner summary {
+    font-weight: 600; font-size: 14px; color: var(--amber); cursor: pointer; user-select: none;
+  }
+  .info-banner p { color: var(--text-dim); font-size: 13px; line-height: 1.6; margin: 12px 0; }
+  .schema-card {
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-m); padding: 14px 18px; margin-top: 10px;
+  }
+  .schema-card pre { margin: 0; font-family: var(--font-display); font-size: 12px; color: var(--text-dim); overflow-x: auto; }
+
+  /* ---------- FIXED BOTTOM PLAYER ---------- */
+  .player-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: var(--player-height);
+    background: rgba(21, 25, 35, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border);
+    z-index: 100;
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    box-shadow: 0 -8px 24px rgba(0,0,0,0.5);
   }
 
-  /* ---------- Main panel ---------- */
-  .main{
-    display:flex; flex-direction:column;
-    min-width:0;
+  .player-left {
+    display: flex; align-items: center; gap: 16px; min-width: 240px; max-width: 320px;
   }
-
-  .now-playing{
-    padding:36px 40px 28px;
-    border-bottom:1px solid var(--border-soft);
-    display:flex; align-items:center; gap:36px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.015), transparent);
-  }
-
-  /* Analog tuning dial — signature element */
-  .dial-wrap{ flex:none; }
-  .dial{ width:150px; height:150px; }
-  .dial-arc{ fill:none; stroke: var(--border); stroke-width:2; }
-  .dial-tick{ stroke: var(--border); stroke-width:1.5; }
-  .dial-tick.major{ stroke: var(--text-faint); stroke-width:2; }
-  .dial-needle{
-    transform-origin: 75px 75px;
-    transform: rotate(-38deg);
+  .dial-wrap { flex: none; position: relative; }
+  .dial { width: 56px; height: 56px; }
+  .dial-arc { fill: none; stroke: var(--border); stroke-width: 2.5; }
+  .dial-tick { stroke: var(--border); stroke-width: 1.5; }
+  .dial-tick.major { stroke: var(--text-faint); stroke-width: 2; }
+  .dial-needle {
+    transform-origin: 75px 75px; transform: rotate(-38deg);
     transition: transform .6s cubic-bezier(.34,1.4,.4,1);
   }
-  .dial-needle line{ stroke: var(--amber); stroke-width:2.5; stroke-linecap:round; }
-  .dial-hub{ fill: var(--amber); }
-  .dial.is-playing .dial-needle{ animation: needle-jitter 2.4s ease-in-out infinite; }
-  @keyframes needle-jitter{
+  .dial-needle line { stroke: var(--amber); stroke-width: 3; stroke-linecap: round; }
+  .dial-hub { fill: var(--amber); }
+  .dial.is-playing .dial-needle { animation: needle-jitter 2.4s ease-in-out infinite; }
+  @keyframes needle-jitter {
     0%,100%{ transform: rotate(4deg); }
     25%{ transform: rotate(9deg); }
     50%{ transform: rotate(1deg); }
     75%{ transform: rotate(7deg); }
   }
-  .dial-label{
-    font-family: var(--font-display); font-size:10px; fill: var(--text-faint);
-    letter-spacing:.08em;
-  }
 
-  .np-info{ flex:1; min-width:0; }
-  .np-status{
-    display:flex; align-items:center; gap:8px;
-    font-family: var(--font-display); font-size:11px; letter-spacing:.12em;
-    text-transform:uppercase; color: var(--text-faint); margin-bottom:10px;
+  .np-info { min-width: 0; flex: 1; }
+  .np-status {
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--font-display); font-size: 10px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--text-faint); margin-bottom: 2px;
   }
-  .np-status .led{
-    width:8px; height:8px; border-radius:50%;
-    background: var(--text-faint);
+  .np-status .led {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--text-faint);
   }
-  .np-status.on-air .led{ background: var(--green); box-shadow:0 0 8px 2px var(--green-dim); }
-  .np-status.on-air{ color: var(--green); }
+  .np-status.on-air .led { background: var(--green); box-shadow: 0 0 8px 2px var(--green-dim); }
+  .np-status.on-air { color: var(--green); }
 
-  .np-name-row{
-    display:flex; align-items:center; gap:10px; margin-bottom:6px; min-width:0;
+  .np-name {
+    font-weight: 700; font-size: 15px; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .np-name{
-    font-family: var(--font-display); font-weight:600;
-    font-size: clamp(22px, 3vw, 34px);
-    letter-spacing:-0.01em;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    min-width:0;
-  }
-  .np-fav-btn{
-    flex:none; width:34px; height:34px; border-radius:50%;
-    background:none; border:1px solid var(--border); cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-    color: var(--text-faint); transition: border-color .12s ease, color .12s ease;
-  }
-  .np-fav-btn:hover{ border-color: var(--amber-dim); color: var(--amber); }
-  .np-fav-btn.is-fav{ color: var(--amber); border-color: var(--amber-dim); background: rgba(232,163,61,0.08); }
-  .np-fav-btn.is-fav svg{ fill: var(--amber); }
-  .np-fav-btn[disabled]{ opacity:.4; cursor:not-allowed; }
-  .np-sub{ font-size:14px; color: var(--text-dim); margin-bottom:20px; }
+  .np-sub { font-size: 12px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
 
-  .transport{ display:flex; align-items:center; gap:14px; }
-  .play-btn{
-    width:52px; height:52px; border-radius:50%;
-    background: var(--amber); border:none; cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-    box-shadow: 0 6px 20px rgba(232,163,61,0.25);
+  .player-center {
+    display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; max-width: 400px;
+  }
+  .transport { display: flex; align-items: center; gap: 14px; }
+  .play-btn {
+    width: 46px; height: 46px; border-radius: 50%;
+    background: var(--amber); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 16px rgba(232,163,61,0.3);
     transition: transform .1s ease, background .15s ease;
+    flex: none;
   }
-  .play-btn:hover{ background:#f3ae4c; }
-  .play-btn:active{ transform: scale(.94); }
-  .play-btn svg{ fill:#1a1200; }
-  .play-btn.loading{ animation: pulse-ring 1s ease-in-out infinite; }
-  @keyframes pulse-ring{ 0%,100%{opacity:1;} 50%{opacity:.55;} }
+  .play-btn:hover { background: #f3ae4c; }
+  .play-btn:active { transform: scale(.94); }
+  .play-btn svg { fill: #1a1200; }
+  .play-btn.loading { animation: pulse-ring 1s ease-in-out infinite; }
+  @keyframes pulse-ring { 0%,100%{opacity:1;} 50%{opacity:.55;} }
 
-  .stop-btn{
-    width:40px; height:40px; border-radius:50%;
-    background: var(--surface-2); border:1px solid var(--border); cursor:pointer;
-    display:flex; align-items:center; justify-content:center; color: var(--text-dim);
+  .stop-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--surface-2); border: 1px solid var(--border); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; color: var(--text-dim); flex: none;
   }
-  .stop-btn:hover{ border-color: var(--red); color: var(--red); }
+  .stop-btn:hover { border-color: var(--red); color: var(--red); }
 
-  .eq{ display:flex; align-items:flex-end; gap:3px; height:26px; margin-left:6px; }
-  .eq span{
-    width:3px; background: var(--amber); border-radius:2px; height:4px;
-    opacity:.35;
+  .eq { display: flex; align-items: flex-end; gap: 3px; height: 20px; margin-left: 4px; }
+  .eq span {
+    width: 3px; background: var(--amber); border-radius: 2px; height: 3px; opacity: .35;
   }
-  .eq.active span{ animation: eq-bounce 1s ease-in-out infinite; opacity:1; }
+  .eq.active span { animation: eq-bounce 1s ease-in-out infinite; opacity: 1; }
   .eq span:nth-child(1){ animation-delay:-0.9s; }
   .eq span:nth-child(2){ animation-delay:-0.6s; }
   .eq span:nth-child(3){ animation-delay:-1.1s; }
   .eq span:nth-child(4){ animation-delay:-0.3s; }
   .eq span:nth-child(5){ animation-delay:-0.75s; }
-  @keyframes eq-bounce{
-    0%,100%{ height:4px; }
-    50%{ height:22px; }
+  @keyframes eq-bounce {
+    0%,100%{ height: 3px; }
+    50%{ height: 18px; }
   }
 
-  .volume{ display:flex; align-items:center; gap:8px; margin-left:auto; color: var(--text-dim); }
-  .volume input[type=range]{
-    width:110px; accent-color: var(--amber);
+  .status-line {
+    font-size: 11.5px; color: var(--text-faint); height: 14px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 360px;
   }
+  .status-line.error { color: var(--red); }
 
-  .status-line{
-    margin-top:14px; font-size:12.5px; color: var(--text-faint);
-    min-height:16px;
+  .player-right {
+    display: flex; align-items: center; gap: 14px; min-width: 180px; justify-content: flex-end;
   }
-  .status-line.error{ color: var(--red); }
+  .volume { display: flex; align-items: center; gap: 8px; color: var(--text-dim); }
+  .volume input[type=range] { width: 90px; accent-color: var(--amber); cursor: pointer; }
 
-  .content{
-    flex:1; padding:28px 40px 40px; overflow-y:auto;
+  .np-fav-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: none; border: 1px solid var(--border); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-faint); transition: border-color .12s ease, color .12s ease; flex: none;
   }
-  .content h2{
-    font-size:14px; margin:0 0 4px; letter-spacing:.02em;
-  }
-  .content .hint{ color: var(--text-dim); font-size:13px; margin:0 0 22px; max-width:640px; line-height:1.6; }
-
-  .schema-card{
-    background: var(--surface);
-    border:1px solid var(--border-soft);
-    border-radius: var(--radius-l);
-    padding:22px 24px;
-    max-width:720px;
-  }
-  .schema-card h3{ margin:0 0 10px; font-size:13px; color: var(--amber); }
-  .schema-card pre{
-    margin:0; font-family: var(--font-display); font-size:12.5px; line-height:1.6;
-    color: var(--text-dim); overflow-x:auto;
-  }
-  .schema-card code{ color:var(--text); }
+  .np-fav-btn:hover { border-color: var(--amber-dim); color: var(--amber); }
+  .np-fav-btn.is-fav { color: var(--amber); border-color: var(--amber-dim); background: rgba(232,163,61,0.08); }
+  .np-fav-btn.is-fav svg { fill: var(--amber); }
+  .np-fav-btn[disabled] { opacity: .4; cursor: not-allowed; }
 
   /* ---------- Modal ---------- */
   .modal-overlay{
-    position:fixed; inset:0; background: rgba(8,9,13,0.65);
-    backdrop-filter: blur(3px);
+    position:fixed; inset:0; background: rgba(8,9,13,0.75);
+    backdrop-filter: blur(4px);
     display:none; align-items:center; justify-content:center;
-    z-index:50; padding:20px;
+    z-index:150; padding:20px;
   }
   .modal-overlay.open{ display:flex; }
   .modal{
@@ -437,8 +586,7 @@
 
   .field{ margin-bottom:14px; }
   .field label{
-    display:block; font-size:12px; color: var(--text-dim); margin-bottom:6px;
-    font-weight:600;
+    display:block; font-size:12px; color: var(--text-dim); margin-bottom:6px; font-weight:600;
   }
   .field input{
     width:100%; background: var(--surface-2); border:1px solid var(--border);
@@ -455,12 +603,12 @@
   .import-hint code{ color: var(--text-dim); background: var(--surface-2); padding:1px 5px; border-radius:4px; }
 
   .preview-list{
-    max-height:230px; overflow-y:auto; border:1px solid var(--border-soft);
-    border-radius: var(--radius-m); margin-top:6px;
+    max-height:200px; overflow-y:auto; border:1px solid var(--border-soft);
+    border-radius: var(--radius-m); margin-top:10px;
   }
   .preview-item{
     display:flex; align-items:center; gap:10px; padding:8px 10px;
-    border-bottom:1px solid var(--border-soft); font-size:12.5px;
+    border-bottom:1px solid var(--border-soft); font-size:12.5px; cursor: pointer;
   }
   .preview-item:last-child{ border-bottom:none; }
   .preview-item input[type=checkbox]{ accent-color: var(--amber); }
@@ -476,12 +624,35 @@
     padding:16px 20px; border-top:1px solid var(--border-soft);
   }
 
+  /* ---------- RESPONSIVE MOBILE MEDIA QUERIES ---------- */
   @media (max-width: 860px){
-    .app{ grid-template-columns: 1fr; }
-    .sidebar{ border-right:none; border-bottom:1px solid var(--border-soft); max-height:46vh; }
-    .now-playing{ padding:24px 20px; gap:20px; flex-wrap:wrap; }
-    .dial{ width:100px; height:100px; }
-    .content{ padding:20px; }
+    .app-container { padding-bottom: 120px; }
+    .header { padding: 12px 16px; flex-wrap: wrap; }
+    .header-actions { max-width: 100%; width: 100%; order: 2; }
+    .brand-mark { order: 1; }
+    .main-content { padding: 16px; gap: 16px; }
+    
+    .player-bar {
+      height: auto;
+      min-height: 100px;
+      padding: 12px 16px;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+    .player-left { width: 100%; max-width: 100%; min-width: 0; order: 1; margin-bottom: 4px; }
+    .player-center { flex: 1; order: 2; align-items: flex-start; }
+    .player-right { flex: none; order: 3; gap: 8px; min-width: 0; }
+    .volume input[type=range] { width: 70px; }
+    .dial-wrap { display: none; } /* Hide dial on mobile to save space */
+  }
+
+  @media (max-width: 520px){
+    .controls-bar { flex-direction: column; align-items: stretch; gap: 12px; }
+    .controls-right { justify-content: space-between; width: 100%; }
+    .station-list.view-grid {
+      grid-template-columns: 1fr;
+    }
+    .player-right .volume { display: none; }
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -494,96 +665,83 @@
 </head>
 <body>
 
-<div class="app">
-  <!-- ================= SIDEBAR ================= -->
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-mark"><span class="dot"></span> Frekans</div>
-      <h1>İnternet Radyo</h1>
-      <p>Yayınları dinle, listeni GitHub'dan içe aktar.</p>
-    </div>
+<div class="app-container">
+  <!-- ================= HEADER ================= -->
+  <header class="header">
+    <a href="#" class="brand-mark">
+      <span class="dot"></span> Frekans
+    </a>
 
-    <div class="toolbar">
+    <div class="header-actions">
       <div class="search">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input id="searchInput" type="text" placeholder="İstasyon ara…">
-      </div>
-      <button class="btn btn-primary" id="openAddModal" title="İstasyon ekle">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Ekle
-      </button>
-    </div>
-
-    <div class="filter-tabs" role="tablist">
-      <button class="filter-tab active" id="filterAll" data-filter="all">Tümü</button>
-      <button class="filter-tab" id="filterFav" data-filter="favorites">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
-        Favoriler <span id="favCount">(0)</span>
-      </button>
-    </div>
-
-    <div class="station-count" id="stationCount">0 istasyon</div>
-    <div class="station-list" id="stationList"></div>
-
-    <div class="sidebar-footer">
-      <button class="btn btn-block" id="clearAllBtn">Tüm Listeyi Temizle</button>
-    </div>
-  </aside>
-
-  <!-- ================= MAIN ================= -->
-  <main class="main">
-    <section class="now-playing">
-      <div class="dial-wrap">
-        <svg class="dial" id="dial" viewBox="0 0 150 150">
-          <path class="dial-arc" d="M 20 110 A 60 60 0 1 1 130 110"></path>
-          <g id="dialTicks"></g>
-          <text class="dial-label" x="18" y="128">88</text>
-          <text class="dial-label" x="122" y="128" text-anchor="end">108</text>
-          <g class="dial-needle" id="dialNeedle">
-            <line x1="75" y1="75" x2="75" y2="28"></line>
-          </g>
-          <circle class="dial-hub" cx="75" cy="75" r="5"></circle>
-        </svg>
+        <input id="searchInput" type="text" placeholder="İstasyon, tür veya ülke ara…">
       </div>
 
-      <div class="np-info">
-        <div class="np-status" id="npStatus"><span class="led"></span><span id="npStatusText">YAYIN YOK</span></div>
-        <div class="np-name-row">
-          <div class="np-name" id="npName">Bir istasyon seç</div>
-          <button class="np-fav-btn" id="npFavBtn" disabled aria-label="Favorilere ekle">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+      <div class="settings-menu-wrap" id="settingsWrap">
+        <button class="btn btn-primary" id="settingsToggleBtn" title="Ayar & Yönetim Menüsü">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          Ayarlar
+        </button>
+        <div class="settings-dropdown" id="settingsDropdown">
+          <button class="dropdown-item" id="menuAddManual">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>Manuel İstasyon Ekle</span>
+          </button>
+          <button class="dropdown-item" id="menuAddImport">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>GitHub'dan İçe Aktar (JSON)</span>
+          </button>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item danger" id="menuClearAll">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+            <span>Tüm Listeyi Temizle</span>
           </button>
         </div>
-        <div class="np-sub" id="npSub">Dinlemeye başlamak için sol taraftan bir yayın seç.</div>
-
-        <div class="transport">
-          <button class="play-btn" id="playBtn" disabled aria-label="Çal / Durdur">
-            <svg id="playIcon" width="20" height="20" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-          </button>
-          <button class="stop-btn" id="stopBtn" disabled aria-label="Durdur">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>
-          </button>
-          <div class="eq" id="eq"><span></span><span></span><span></span><span></span><span></span></div>
-
-          <div class="volume">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-            <input type="range" id="volumeSlider" min="0" max="100" value="80">
-          </div>
-        </div>
-
-        <div class="status-line" id="statusLine"></div>
       </div>
-    </section>
+    </div>
+  </header>
 
-    <section class="content">
-      <h2>JSON içe aktarma biçimi</h2>
-      <p class="hint">
-        "GitHub'dan İçe Aktar" sekmesine, açık kaynak bir istasyon listesi barındıran
-        <strong>raw.githubusercontent.com</strong> bağlantısını yapıştırman yeterli. Uygulama, aşağıdaki
-        alan adlarından herhangi birini otomatik olarak tanır — böylece farklı projelerin JSON biçimleriyle de çalışır.
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="main-content">
+    <div class="controls-bar">
+      <div class="filter-tabs" role="tablist">
+        <button class="filter-tab active" id="filterAll" data-filter="all">Tüm Yayınlar</button>
+        <button class="filter-tab" id="filterFav" data-filter="favorites">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+          Favoriler <span id="favCount">(0)</span>
+        </button>
+      </div>
+
+      <div class="controls-right">
+        <div class="station-count" id="stationCount">0 istasyon</div>
+        <div class="view-switcher" role="group" aria-label="Görünüm modu">
+          <button class="view-btn active" id="viewGridBtn" title="Grid Görünümü" aria-label="Grid Görünümü">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </button>
+          <button class="view-btn" id="viewListBtn" title="Liste Görünümü" aria-label="Liste Görünümü">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Station List -->
+    <div class="station-list-container">
+      <div class="station-list view-grid" id="stationList"></div>
+    </div>
+
+    <!-- Info / Format Section -->
+    <details class="info-banner">
+      <summary>GitHub JSON İçe Aktarma Formatı Hakkında Bilgi</summary>
+      <p>
+        "Ekle" butonuna basarak <strong>GitHub'dan İçe Aktar</strong> sekmesini kullanabilirsiniz.
+        Açık kaynak bir istasyon listesi barındıran <code>raw.githubusercontent.com</code> adresini yapıştırmanız yeterlidir.
       </p>
       <div class="schema-card">
-        <h3>Beklenen JSON yapısı (esnek alan adları)</h3>
         <pre><code>[
   {
     "name": "Radyo Eksen",              <span style="color:#5b6274">// veya "title" / "station_name"</span>
@@ -594,8 +752,52 @@
   }
 ]</code></pre>
       </div>
-    </section>
+    </details>
   </main>
+
+  <!-- ================= FIXED BOTTOM PLAYER ================= -->
+  <footer class="player-bar" id="playerBar">
+    <div class="player-left">
+      <div class="dial-wrap">
+        <svg class="dial" id="dial" viewBox="0 0 150 150">
+          <path class="dial-arc" d="M 20 110 A 60 60 0 1 1 130 110"></path>
+          <g id="dialTicks"></g>
+          <g class="dial-needle" id="dialNeedle">
+            <line x1="75" y1="75" x2="75" y2="28"></line>
+          </g>
+          <circle class="dial-hub" cx="75" cy="75" r="5"></circle>
+        </svg>
+      </div>
+      <div class="np-info">
+        <div class="np-status" id="npStatus"><span class="led"></span><span id="npStatusText">YAYIN YOK</span></div>
+        <div class="np-name" id="npName">Bir istasyon seç</div>
+        <div class="np-sub" id="npSub">Dinlemeye başlamak için bir radyo seçin</div>
+      </div>
+    </div>
+
+    <div class="player-center">
+      <div class="transport">
+        <button class="play-btn" id="playBtn" disabled aria-label="Çal / Durdur">
+          <svg id="playIcon" width="20" height="20" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button class="stop-btn" id="stopBtn" disabled aria-label="Durdur">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>
+        </button>
+        <div class="eq" id="eq"><span></span><span></span><span></span><span></span><span></span></div>
+      </div>
+      <div class="status-line" id="statusLine"></div>
+    </div>
+
+    <div class="player-right">
+      <div class="volume">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        <input type="range" id="volumeSlider" min="0" max="100" value="80">
+      </div>
+      <button class="np-fav-btn" id="npFavBtn" disabled aria-label="Favorilere ekle">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+      </button>
+    </div>
+  </footer>
 </div>
 
 <audio id="audioEl" preload="none" crossorigin="anonymous"></audio>
@@ -674,6 +876,7 @@
   /* ---------------- Persistence ---------------- */
   const STORAGE_KEY = "frekans_stations_v2";
   const VOL_KEY = "frekans_volume_v1";
+  const VIEW_KEY = "frekans_view_mode_v1";
 
   const DEFAULT_STATIONS = [
     { id: "d1", name: "TRT FM", url: "http://trtcanlifm-lh.akamaihd.net/i/TRTFM_1@181846/master.m3u8", genre: "Pop", country: "Türkiye", favicon: "" },
@@ -724,6 +927,7 @@
     isLoading: false,
     importPreview: [],
     filter: "all",        // "all" | "favorites"
+    viewMode: localStorage.getItem(VIEW_KEY) || "grid", // "grid" | "list"
     dragId: null
   };
 
@@ -745,21 +949,25 @@
   const npSub = $("npSub");
   const statusLine = $("statusLine");
   const volumeSlider = $("volumeSlider");
+  const viewGridBtn = $("viewGridBtn");
+  const viewListBtn = $("viewListBtn");
 
   const ICON_PLAY = '<path d="M8 5v14l11-7z"/>';
   const ICON_PAUSE = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
+  const FAV_ICON = '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/>';
 
   /* ---------------- Dial ticks (decorative) ---------------- */
   (function buildTicks(){
     const g = $("dialTicks");
+    if(!g) return;
     const cx = 75, cy = 75, rOuter = 60, rInner = 52;
-    const startDeg = -215, endDeg = 35; // sweep matching arc
-    const count = 22;
+    const startDeg = -215, endDeg = 35;
+    const count = 18;
     for(let i=0;i<=count;i++){
       const t = i / count;
       const deg = startDeg + t*(endDeg-startDeg);
       const rad = deg * Math.PI/180;
-      const major = i % 4 === 0;
+      const major = i % 3 === 0;
       const rI = major ? rInner - 4 : rInner;
       const x1 = cx + rOuter*Math.cos(rad), y1 = cy + rOuter*Math.sin(rad);
       const x2 = cx + rI*Math.cos(rad), y2 = cy + rI*Math.sin(rad);
@@ -771,17 +979,32 @@
     }
   })();
 
-  /* ---------------- Volume ---------------- */
-  (function initVolume(){
-    const saved = localStorage.getItem(VOL_KEY);
-    const v = saved !== null ? parseInt(saved,10) : 80;
+  /* ---------------- Volume & View Init ---------------- */
+  (function initPrefs(){
+    const savedVol = localStorage.getItem(VOL_KEY);
+    const v = savedVol !== null ? parseInt(savedVol,10) : 80;
     volumeSlider.value = v;
     audioEl.volume = v/100;
+
+    setViewMode(state.viewMode);
   })();
+
   volumeSlider.addEventListener("input", ()=>{
     audioEl.volume = volumeSlider.value/100;
     localStorage.setItem(VOL_KEY, volumeSlider.value);
   });
+
+  function setViewMode(mode){
+    state.viewMode = mode;
+    localStorage.setItem(VIEW_KEY, mode);
+    stationListEl.className = "station-list view-" + mode;
+    viewGridBtn.classList.toggle("active", mode === "grid");
+    viewListBtn.classList.toggle("active", mode === "list");
+    renderList();
+  }
+
+  viewGridBtn.addEventListener("click", ()=> setViewMode("grid"));
+  viewListBtn.addEventListener("click", ()=> setViewMode("list"));
 
   /* ---------------- Rendering ---------------- */
   function escapeHtml(str){
@@ -791,8 +1014,6 @@
   function initials(name){
     return (name||"?").trim().split(/\s+/).slice(0,2).map(w=>w[0]).join("").toUpperCase();
   }
-
-  const FAV_ICON = '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/>';
 
   function favoriteCount(){ return state.stations.filter(s=>s.favorite).length; }
 
@@ -807,42 +1028,72 @@
     });
 
     $("favCount").textContent = "(" + favoriteCount() + ")";
+    const canDrag = state.filter === "all" && !q;
     stationCountEl.innerHTML = `<span>${state.stations.length} istasyon${q ? ` · ${filtered.length} eşleşme` : ""}</span>` +
-      (state.filter==="all" && !q && filtered.length>1 ? `<span class="drag-hint">sürükle · sırala</span>` : "");
+      (canDrag && filtered.length > 1 ? `<span class="drag-hint">· sürükle & bırak ile sırala</span>` : "");
 
     if(filtered.length === 0){
       const msg = state.filter === "favorites"
-        ? "Henüz favori eklemedin. Bir istasyonun üzerine gelip yıldıza tıkla."
-        : (state.stations.length===0 ? "Henüz istasyon yok. Sağ üstten ekleyebilirsin." : "Aramayla eşleşen istasyon yok.");
+        ? "Henüz favori eklemedin. Bir istasyonun üzerindeki yıldıza basarak ekleyebilirsin."
+        : (state.stations.length===0 ? "Henüz istasyon yok. Üst menüden ekleyebilirsiniz." : "Aramayla eşleşen istasyon bulunamadı.");
       stationListEl.innerHTML = `<div class="empty-state">${msg}</div>`;
       return;
     }
 
-    const canDrag = state.filter === "all" && !q;
+    const TRASH_ICON = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`;
 
     stationListEl.innerHTML = filtered.map(s=>{
       const active = s.id === state.activeId;
       const sub = [s.genre, s.country].filter(Boolean).join(" · ");
-      return `
-      <div class="station-card ${active?"active":""}" data-id="${s.id}" draggable="${canDrag}">
-        ${canDrag ? `<div class="drag-handle" title="Sürükleyerek sırala">⠿</div>` : ""}
-        <div class="station-logo">${s.favicon ? `<img src="${escapeHtml(s.favicon)}" loading="lazy" onerror="this.parentElement.textContent='${initials(s.name)}'">` : initials(s.name)}</div>
-        <div class="station-meta">
-          <div class="station-name">${escapeHtml(s.name)}</div>
-          <div class="station-sub">${escapeHtml(sub || "İstasyon")}</div>
-        </div>
-        <div class="station-playing-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${state.isPlaying?'var(--green)':'var(--text-faint)'}" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
-        </div>
-        <button class="btn btn-ghost fav-btn ${s.favorite?"is-fav":""}" data-id="${s.id}" title="${s.favorite?"Favorilerden çıkar":"Favorilere ekle"}" aria-label="Favori">
-          <svg width="15" height="15" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="${s.favorite?"currentColor":"none"}">${FAV_ICON}</svg>
-        </button>
-        <div class="station-actions">
-          <button class="btn btn-ghost btn-danger remove-btn" data-id="${s.id}" title="Kaldır" aria-label="Kaldır">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      const logoHtml = s.favicon ? `<img src="${escapeHtml(s.favicon)}" loading="lazy" onerror="this.parentElement.textContent='${initials(s.name)}'">` : initials(s.name);
+
+      if(state.viewMode === "grid") {
+        return `
+        <div class="station-card ${active?"active":""}" data-id="${s.id}" draggable="${canDrag}">
+          <div class="station-top">
+            <div class="station-logo">${logoHtml}</div>
+            <div class="station-top-actions">
+              ${canDrag ? `<span class="drag-handle" title="Sürükleyerek sırala">⠿</span>` : ""}
+              <button class="fav-btn ${s.favorite?"is-fav":""}" data-id="${s.id}" title="${s.favorite?"Favorilerden çıkar":"Favorilere ekle"}" aria-label="Favori">
+                <svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="${s.favorite?"currentColor":"none"}">${FAV_ICON}</svg>
+              </button>
+            </div>
+          </div>
+          <div class="station-meta">
+            <div class="station-name">${escapeHtml(s.name)}</div>
+            <div class="station-sub">${escapeHtml(sub || "Canlı Yayın")}</div>
+          </div>
+          <div class="station-card-footer">
+            <div class="station-playing-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${state.isPlaying && active?'var(--green)':'var(--amber)'}" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+            </div>
+            <button class="btn btn-ghost btn-danger remove-btn" data-id="${s.id}" title="İstasyonu Sil" aria-label="Sil">
+              ${TRASH_ICON}
+            </button>
+          </div>
+        </div>`;
+      } else {
+        return `
+        <div class="station-card ${active?"active":""}" data-id="${s.id}" draggable="${canDrag}">
+          ${canDrag ? `<div class="drag-handle" title="Sürükleyerek sırala">⠿</div>` : ""}
+          <div class="station-logo">${logoHtml}</div>
+          <div class="station-meta">
+            <div class="station-name">${escapeHtml(s.name)}</div>
+            <div class="station-sub">${escapeHtml(sub || "Canlı Yayın")}</div>
+          </div>
+          <div class="station-playing-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${state.isPlaying && active?'var(--green)':'var(--amber)'}" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+          </div>
+          <button class="btn btn-ghost fav-btn ${s.favorite?"is-fav":""}" data-id="${s.id}" title="${s.favorite?"Favorilerden çıkar":"Favorilere ekle"}" aria-label="Favori">
+            <svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="${s.favorite?"currentColor":"none"}">${FAV_ICON}</svg>
           </button>
-        </div>
-      </div>`;
+          <div class="station-actions">
+            <button class="btn btn-ghost btn-danger remove-btn" data-id="${s.id}" title="Sil" aria-label="Kaldır">
+              ${TRASH_ICON}
+            </button>
+          </div>
+        </div>`;
+      }
     }).join("");
   }
 
@@ -863,7 +1114,7 @@
     if(card) playStation(card.dataset.id);
   });
 
-  /* ---- Drag to reorder ---- */
+  /* ---- Drag to reorder (in List view) ---- */
   stationListEl.addEventListener("dragstart", (e)=>{
     const card = e.target.closest(".station-card");
     if(!card || card.getAttribute("draggable") !== "true") return;
@@ -934,7 +1185,7 @@
     renderList();
   }
 
-  $("clearAllBtn").addEventListener("click", ()=>{
+  function clearAllStations(){
     if(state.stations.length===0) return;
     if(confirm("Tüm istasyon listesi silinsin mi? Bu işlem geri alınamaz.")){
       state.stations = [];
@@ -942,7 +1193,40 @@
       saveStations();
       renderList();
     }
-  });
+  }
+
+  /* ---------------- Settings Dropdown Menu ---------------- */
+  const settingsWrap = $("settingsWrap");
+  const settingsToggleBtn = $("settingsToggleBtn");
+  const settingsDropdown = $("settingsDropdown");
+
+  if(settingsToggleBtn && settingsDropdown){
+    settingsToggleBtn.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      settingsDropdown.classList.toggle("open");
+    });
+
+    document.addEventListener("click", (e)=>{
+      if(settingsWrap && !settingsWrap.contains(e.target)){
+        settingsDropdown.classList.remove("open");
+      }
+    });
+
+    $("menuAddManual").addEventListener("click", ()=>{
+      settingsDropdown.classList.remove("open");
+      openModal("manual");
+    });
+
+    $("menuAddImport").addEventListener("click", ()=>{
+      settingsDropdown.classList.remove("open");
+      openModal("import");
+    });
+
+    $("menuClearAll").addEventListener("click", ()=>{
+      settingsDropdown.classList.remove("open");
+      clearAllStations();
+    });
+  }
 
   /* ---------------- Playback ---------------- */
   function findStation(id){ return state.stations.find(s=>s.id===id); }
@@ -998,7 +1282,7 @@
   audioEl.addEventListener("error", ()=>{
     state.isPlaying = false; state.isLoading = false;
     playBtn.classList.remove("loading");
-    setStatus("Yayına ulaşılamıyor. URL geçersiz olabilir ya da yayın kapalı.", true);
+    setStatus("Yayına ulaşılamıyor. URL geçersiz olabilir veya yayın kapalı.", true);
     updateTransportUI();
     renderList();
   });
@@ -1040,7 +1324,7 @@
   function updateNowPlaying(station){
     if(!station){
       npName.textContent = "Bir istasyon seç";
-      npSub.textContent = "Dinlemeye başlamak için sol taraftan bir yayın seç.";
+      npSub.textContent = "Dinlemeye başlamak için bir radyo seçin";
       npStatusText.textContent = "YAYIN YOK";
       npStatus.classList.remove("on-air");
       playBtn.disabled = true;
@@ -1071,13 +1355,15 @@
   const panelManual = $("panelManual"), panelImport = $("panelImport");
   const confirmManual = $("confirmManual"), confirmImport = $("confirmImport");
 
-  function openModal(){
+  function openModal(which = "manual"){
     modalOverlay.classList.add("open");
-    switchTab("manual");
+    switchTab(which);
   }
   function closeModalFn(){
     modalOverlay.classList.remove("open");
-    ["manualName","manualUrl","manualGenre","manualCountry","manualLogo","importUrl"].forEach(id=> $(id).value = "");
+    ["manualName","manualUrl","manualGenre","manualCountry","manualLogo","importUrl"].forEach(id=> {
+      const el = $(id); if(el) el.value = "";
+    });
     $("manualMsg").innerHTML = "";
     $("importMsg").innerHTML = "";
     $("previewList").style.display = "none";
@@ -1085,7 +1371,8 @@
     state.importPreview = [];
   }
 
-  $("openAddModal").addEventListener("click", openModal);
+  const openAddModal = $("openAddModal");
+  if(openAddModal) openAddModal.addEventListener("click", () => openModal("manual"));
   $("closeModal").addEventListener("click", closeModalFn);
   $("cancelModal").addEventListener("click", closeModalFn);
   modalOverlay.addEventListener("click", (e)=>{ if(e.target===modalOverlay) closeModalFn(); });
