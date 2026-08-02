@@ -1,6 +1,6 @@
 # Frekans — İnternet Radyo İstasyonu 📻
 
-**Frekans**, modern ve şık arayüzü ile canlı internet radyo yayınlarını dinlemenizi, kendi radyo listenizi oluşturmanızı ve GitHub üzerindeki açık kaynak JSON radyo listelerini projeye aktarmanızı sağlayan responsive (mobil uyumlu) bir web uygulamasıdır.
+**Frekans**, modern ve şık arayüzü ile canlı internet radyo yayınlarını dinlemenizi, radyo istasyonlarınızı düzenlemenizi, listenizi JSON olarak dışarı aktarmanızı ve GitHub üzerindeki açık kaynak radyo listelerini projeye aktarmanızı sağlayan responsive (mobil uyumlu) bir web uygulamasıdır.
 
 ---
 
@@ -12,16 +12,30 @@
   - Çalınan yayın için dinamik ekolayzır (equalizer bounce) görselleştirmesi.
   - Ses seviyesi (volume) kontrolü, duraklatma ve durdurma işlevleri.
 
+- **✏️ İstasyon Düzenleme & Düzenleme Modu**:
+  - **Düzenleme Modu Toggle**: Ayarlar menüsünden istenildiği zaman açılıp kapatılabilen düzenleme modu.
+  - **İstasyon Güncelleme**: İstasyon adı, yayın akış URL'si, müzik türü, ülke ve logo bilgilerini kolayca düzenleme imkanı.
+  - Düzenlenen yayının anında çalara ve hafızaya yansıması.
+
+- **💾 Listeyi Dışarı Aktarma (JSON Export)**:
+  - Ayarlar menüsünden tek tıkla mevcut tüm radyo listenizi JSON formatında bilgisayarınıza indirme.
+  - İndirilen veriler ile radyo listenizi yedekleyebilir veya başka cihazlara aktarabilirsiniz.
+
+- **🚨 Modern Özel Silme Onayı Modal Dialog**:
+  - Tarayıcının varsayılan pop-up'ları yerine uygulamanın koyu temasına ve cam efektine tam uyumlu özel onay penceresi.
+  - Yanlışlıkla radyo silmeyi önleyen güvenli onay akışı.
+
+- **🖐️ Görsel Tutamaçlı Sürükle & Bırak Sıralama (Drag & Drop)**:
+  - Kartların sağ üst köşesinde yer alan 6 noktalı özel tutamaç (`DRAG_ICON`) ile istasyon sırasını kolayca değiştirme.
+  - Yapılan yeni sıralamanın `localStorage` üzerinde saklanması.
+
 - **🔲 Izgara (Grid) & Liste (List) Görünümü**:
   - İstasyonları modern kartlar (Grid) veya kompakt satırlar (Liste) halinde görüntüleme.
-  - Seçilen görünüm tercihinin `localStorage` ile hatırlanması.
+  - Hızlı kart içi `Oynat/Duraklat` butonları ve canlı yayın rozetleri (`YAYINDA` / `SEÇİLDİ` / `CANLI`).
+  - Seçilen görünüm tercihinin hafızada tutulması.
 
-- **🖐️ Sürükle & Bırak Sıralama (Drag & Drop)**:
-  - İstasyon sırasını kolayca sürükleyip bırakarak özelleştirme.
-  - Yapılan yeni sıralamanın hafızada tutulması.
-
-- **⚙️ Yönetim ve Ayarlar Menüsü**:
-  - **Manuel İstasyon Ekleme**: İstasyon adı, akış URL'si, tür, ülke ve logo bağlantısı girerek özel yayın ekleme.
+- **⚙️ Gelişmiş Yönetim Menüsü**:
+  - **Manuel İstasyon Ekleme**: Form aracılığıyla özel yayın ekleme.
   - **GitHub'dan İçe Aktarma (JSON)**: `raw.githubusercontent.com` bağlantısı yapıştırarak açık kaynak radyo listelerini otomatik tanıma ve seçerek ekleme.
   - **Liste Temizleme & Silme**: İstasyonları tek tek veya topluca temizleme.
 
@@ -65,9 +79,9 @@ npx http-server .
 
 ---
 
-## 📋 Örnek JSON İçe Aktarma Biçimi
+## 📋 Örnek JSON İçe & Dışarı Aktarma Biçimi
 
-GitHub'dan içe aktarma alanında kullanılacak JSON dosyası aşağıdaki gibi esnek alan adlarını destekler:
+Projeden dışarı aktarılan ve içe aktarmada desteklenen JSON formatı:
 
 ```json
 [
@@ -76,7 +90,8 @@ GitHub'dan içe aktarma alanında kullanılacak JSON dosyası aşağıdaki gibi 
     "url": "https://listen.radioking.com/radio/eksen/stream/live",
     "genre": "Alternatif Rock",
     "country": "Türkiye",
-    "favicon": "https://example.com/logo.png"
+    "favicon": "https://example.com/logo.png",
+    "favorite": false
   }
 ]
 ```

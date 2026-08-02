@@ -346,6 +346,7 @@
   .view-grid .station-card-footer {
     margin-top: auto; display: flex; align-items: center; justify-content: space-between; padding-top: 10px;
     border-top: 1px solid rgba(255,255,255,0.04);
+    min-height: 42px;
   }
 
   /* LIST VIEW */
@@ -360,6 +361,7 @@
     border: 1px solid var(--border-soft);
     cursor: pointer; position: relative;
     transition: background .12s ease, border-color .12s ease;
+    min-height: 58px;
   }
   .view-list .station-card:hover { background: var(--surface-2); border-color: var(--border); }
   .view-list .station-card.active {
@@ -388,15 +390,18 @@
   .station-card.drag-over { border-color: var(--amber); box-shadow: inset 0 2px 0 var(--amber); }
 
   .drag-handle {
-    flex: none; width: 14px; display: flex; align-items: center; justify-content: center;
-    color: var(--text-faint); cursor: grab; opacity: 0; transition: opacity .12s;
-    letter-spacing: 2px; font-size: 13px; line-height: 1;
+    flex: none; display: inline-flex; align-items: center; justify-content: center;
+    color: var(--text-faint); cursor: grab; opacity: 0.45; transition: opacity .15s ease, color .15s ease;
+    padding: 4px; border-radius: var(--radius-s);
   }
-  .station-card:hover .drag-handle { opacity: 1; }
-  .drag-handle:active { cursor: grabbing; }
+  .drag-handle svg { display: block; fill: currentColor; }
+  .station-card:hover .drag-handle { opacity: 0.9; color: var(--amber); }
+  .drag-handle:hover { opacity: 1; color: var(--amber); background: rgba(232,163,61,0.1); }
+  .drag-handle:active { cursor: grabbing; opacity: 1; }
 
   .fav-btn {
     color: var(--text-faint); opacity: 0.6; transition: opacity .12s ease, color .12s ease; background: none; border: none; cursor: pointer; padding: 4px;
+    width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-s);
   }
   .fav-btn svg { display: block; }
   .fav-btn.is-fav { color: var(--amber); opacity: 1; }
@@ -404,10 +409,40 @@
   .station-card:hover .fav-btn { opacity: 1; }
 
   .station-actions { flex: none; display: flex; align-items: center; gap: 4px; }
-  .station-playing-icon {
-    flex: none; width: 16px; display: none; align-items: center; justify-content: center;
+  
+  .card-play-btn {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--text-dim); display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all .15s ease; flex: none;
   }
-  .station-card.active .station-playing-icon { display: flex; }
+  .station-card:hover .card-play-btn {
+    background: var(--amber); border-color: var(--amber); color: #1a1200; transform: scale(1.05);
+  }
+  .station-card.active .card-play-btn {
+    background: var(--amber); border-color: var(--amber); color: #1a1200;
+  }
+  .station-card.active.is-playing .card-play-btn {
+    background: var(--green); border-color: var(--green); color: #092014;
+  }
+  .card-play-btn svg { fill: currentColor; }
+
+  .station-playing-badge {
+    display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 12px;
+    font-family: var(--font-display); font-size: 10.5px; font-weight: 700; letter-spacing: .06em;
+    background: rgba(232,163,61,0.1); color: var(--amber); border: 1px solid rgba(232,163,61,0.25);
+    transition: all .2s ease;
+  }
+  .station-playing-badge .badge-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--amber);
+  }
+  .station-card.active.is-playing .station-playing-badge {
+    background: var(--green-dim); color: var(--green); border-color: rgba(61,220,132,0.3);
+  }
+  .station-card.active.is-playing .station-playing-badge .badge-dot {
+    background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse-dot 1.5s infinite;
+  }
+  @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(1.2); } }
 
   .empty-state {
     padding: 48px 24px;
@@ -687,6 +722,11 @@
           Ayarlar
         </button>
         <div class="settings-dropdown" id="settingsDropdown">
+          <button class="dropdown-item" id="menuToggleEdit">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            <span id="menuToggleEditLabel">Düzenleme Modunu Aç</span>
+          </button>
+          <div class="dropdown-divider"></div>
           <button class="dropdown-item" id="menuAddManual">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             <span>Manuel İstasyon Ekle</span>
@@ -694,6 +734,10 @@
           <button class="dropdown-item" id="menuAddImport">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span>GitHub'dan İçe Aktar (JSON)</span>
+          </button>
+          <button class="dropdown-item" id="menuExportJSON">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span>Listeyi Dışarı Aktar (JSON)</span>
           </button>
           <div class="dropdown-divider"></div>
           <button class="dropdown-item danger" id="menuClearAll">
@@ -806,20 +850,21 @@
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="modal-head">
-      <h3>İstasyon Ekle</h3>
+      <h3 id="modalTitle">İstasyon Ekle</h3>
       <button class="btn btn-ghost" id="closeModal" aria-label="Kapat">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
 
-    <div class="tabs">
+    <div class="tabs" id="modalTabs">
       <div class="tab active" id="tabManual">Manuel Ekle</div>
       <div class="tab" id="tabImport">GitHub'dan İçe Aktar</div>
     </div>
 
     <div class="modal-body">
-      <!-- Manual add -->
+      <!-- Manual add / Edit -->
       <div id="panelManual">
+        <input type="hidden" id="editStationId" value="">
         <div class="field">
           <label>İstasyon Adı</label>
           <input type="text" id="manualName" placeholder="Örn. Radyo Eksen">
@@ -869,6 +914,28 @@
   </div>
 </div>
 
+<!-- ================= CONFIRMATION MODAL ================= -->
+<div class="modal-overlay" id="confirmOverlay">
+  <div class="modal" style="max-width: 420px;">
+    <div class="modal-head">
+      <h3 id="confirmTitle" style="color: var(--red); display: flex; align-items: center; gap: 8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Silme Onayı
+      </h3>
+      <button class="btn btn-ghost" id="closeConfirmModal" aria-label="Kapat">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="padding: 20px 24px 10px;">
+      <p id="confirmDesc" style="margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--text-dim);"></p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="cancelConfirmBtn">Vazgeç</button>
+      <button class="btn btn-danger" id="okConfirmBtn" style="background: rgba(224,85,90,0.15); border-color: var(--red);">Sil</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
   "use strict";
@@ -879,29 +946,29 @@
   const VIEW_KEY = "frekans_view_mode_v1";
 
   const DEFAULT_STATIONS = [
-    { id: "d1", name: "TRT FM", url: "http://trtcanlifm-lh.akamaihd.net/i/TRTFM_1@181846/master.m3u8", genre: "Pop", country: "Türkiye", favicon: "" },
-    { id: "d2", name: "TRT Radyo 3", url: "https://radio-trtradyo3.live.trt.com.tr/master_128.m3u8", genre: "Klasik, Caz, Rock", country: "Türkiye", favicon: "" },
-    { id: "d3", name: "TRT Nağme", url: "https://radio-trtnagme.live.trt.com.tr/master_128.m3u8", genre: "Türk Sanat Müziği", country: "Türkiye", favicon: "" },
-    { id: "d4", name: "TRT Türkü", url: "https://radio-trtturku.live.trt.com.tr/master_128.m3u8", genre: "Türkü", country: "Türkiye", favicon: "" },
-    { id: "d5", name: "TRT Radyo Haber", url: "https://radio-trtradyohaber.live.trt.com.tr/master_128.m3u8", genre: "Haber", country: "Türkiye", favicon: "" },
-    { id: "d6", name: "Power FM", url: "https://listen.powerapp.com.tr/powerfm/mpeg/icecast.audio?/;stream.mp3", genre: "Pop, Yabancı", country: "Türkiye", favicon: "" },
-    { id: "d7", name: "PowerTürk FM", url: "https://listen.powerapp.com.tr/powerturk/mpeg/icecast.audio?/;stream.mp3", genre: "Türkçe Pop", country: "Türkiye", favicon: "" },
-    { id: "d8", name: "PowerTürk Akustik", url: "https://listen.powerapp.com.tr/powerturkakustik/abr/powerturkakustik/128/playlist.m3u8", genre: "Akustik", country: "Türkiye", favicon: "" },
-    { id: "d9", name: "PowerTürk Dans", url: "https://listen.powerapp.com.tr/powerturkdans/abr/powerturkdans/128/playlist.m3u8", genre: "Dans", country: "Türkiye", favicon: "" },
-    { id: "d10", name: "Power XL", url: "https://listen.powerapp.com.tr/powerextralounge/abr/powerextralounge/128/playlist.m3u8", genre: "Lounge", country: "Türkiye", favicon: "" },
-    { id: "d11", name: "Power Smooth Jazz", url: "https://listen.powerapp.com.tr/powersmoothjazz/abr/powersmoothjazz/128/playlist.m3u8", genre: "Jazz", country: "Türkiye", favicon: "" },
-    { id: "d12", name: "Metro FM", url: "http://playerservices.streamtheworld.com/api/livestream-redirect/METRO_FM.mp3", genre: "Pop", country: "Türkiye", favicon: "" },
-    { id: "d13", name: "Süper FM", url: "http://playerservices.streamtheworld.com/api/livestream-redirect/SUPER_FM.mp3", genre: "Pop", country: "Türkiye", favicon: "" },
-    { id: "d14", name: "Joy FM", url: "https://17733.live.streamtheworld.com/JOY_FM2AAC_SC?/;stream.mp3", genre: "Dans, Pop", country: "Türkiye", favicon: "" },
-    { id: "d15", name: "Joytürk FM", url: "https://17753.live.streamtheworld.com/JOY_TURK_SC?/;", genre: "Türkçe Pop", country: "Türkiye", favicon: "" },
-    { id: "d16", name: "Virgin Radio Türkiye", url: "https://17753.live.streamtheworld.com/VIRGIN_RADIO_SC?/;stream.mp3", genre: "Yabancı Pop, Rock", country: "Türkiye", favicon: "" },
-    { id: "d17", name: "Best FM", url: "http://46.20.7.125:80/;", genre: "Pop", country: "Türkiye", favicon: "" },
-    { id: "d18", name: "Alem FM", url: "https://turkmedya.radyotvonline.net/alemfmaac", genre: "Arabesk, Türkçe Pop", country: "Türkiye", favicon: "" },
-    { id: "d19", name: "A Haber Radyo", url: "https://trkvz-radyolar.ercdn.net/ahaberradyo/playlist.m3u8", genre: "Haber", country: "Türkiye", favicon: "" },
-    { id: "d20", name: "A Spor Radyo", url: "https://trkvz-radyolar.ercdn.net/asporradyo/playlist.m3u8", genre: "Spor", country: "Türkiye", favicon: "" },
-    { id: "d21", name: "Kiss FM Türkiye", url: "https://topradio-de-hz-fal-stream03-cluster01.radiohost.de/kissfm-tuerkisch_aac-64", genre: "Pop", country: "Türkiye", favicon: "" },
-    { id: "d22", name: "Açık Radyo", url: "https://acikradyo.stream.mediatriple.net/acikradyo_96.aac", genre: "Bağımsız, Kültür", country: "Türkiye", favicon: "" },
-    { id: "d23", name: "Radyo Eksen", url: "https://listen.radioking.com/radio/eksen/stream/live", genre: "Alternatif Rock", country: "Türkiye", favicon: "" }
+    { id: "d1", name: "TRT FM", url: "http://trtcanlifm-lh.akamaihd.net/i/TRTFM_1@181846/master.m3u8", genre: "Pop", country: "Türkiye", favicon: "", favorite: false },
+    { id: "d2", name: "TRT Radyo 3", url: "https://radio-trtradyo3.live.trt.com.tr/master_128.m3u8", genre: "Klasik, Caz, Rock", country: "Türkiye", favicon: "", favorite: false },
+    { id: "d3", name: "TRT Nağme", url: "https://radio-trtnagme.live.trt.com.tr/master_128.m3u8", genre: "Türk Sanat Müziği", country: "Türkiye", favicon: "", favorite: false },
+    { id: "d4", name: "TRT Türkü", url: "https://radio-trtturku.live.trt.com.tr/master_128.m3u8", genre: "Türkü", country: "Türkiye", favicon: "", favorite: false },
+    { id: "d5", name: "TRT Radyo Haber", url: "https://radio-trtradyohaber.live.trt.com.tr/master_128.m3u8", genre: "Haber", country: "Türkiye", favicon: "", favorite: false },
+    { id: "d6", name: "Power FM", url: "https://listen.powerapp.com.tr/powerfm/mpeg/icecast.audio?/;stream.mp3", genre: "Pop, Yabancı", country: "Türkiye", favicon: "", favorite: false },
+    { id: "d7", name: "PowerTürk FM", url: "https://listen.powerapp.com.tr/powerturk/mpeg/icecast.audio?/;stream.mp3", genre: "Türkçe Pop", country: "Türkiye", favicon: "", favorite: false },
+    { id: "d8", name: "PowerTürk Akustik", url: "https://listen.powerapp.com.tr/powerturkakustik/abr/powerturkakustik/128/playlist.m3u8", genre: "Akustik", country: "Türkiye", favicon: "", favorite: false },
+    { id: "d9", name: "PowerTürk Dans", url: "https://listen.powerapp.com.tr/powerturkdans/abr/powerturkdans/128/playlist.m3u8", genre: "Dans", country: "Türkiye", favicon: "", favorite: false },
+    { id: "d10", name: "Power XL", url: "https://listen.powerapp.com.tr/powerextralounge/abr/powerextralounge/128/playlist.m3u8", genre: "Lounge", country: "Türkiye", favicon: "", favorite: false },
+    { id: "d11", name: "Power Smooth Jazz", url: "https://listen.powerapp.com.tr/powersmoothjazz/abr/powersmoothjazz/128/playlist.m3u8", genre: "Jazz", country: "Türkiye", favicon: "", favorite: false },
+    { id: "d12", name: "Metro FM", url: "http://playerservices.streamtheworld.com/api/livestream-redirect/METRO_FM.mp3", genre: "Pop", country: "Türkiye", favicon: "", favorite: false },
+    { id: "d13", name: "Süper FM", url: "http://playerservices.streamtheworld.com/api/livestream-redirect/SUPER_FM.mp3", genre: "Pop", country: "Türkiye", favicon: "", favorite: false },
+    { id: "d14", name: "Joy FM", url: "https://17733.live.streamtheworld.com/JOY_FM2AAC_SC?/;stream.mp3", genre: "Dans, Pop", country: "Türkiye", favicon: "", favorite: false },
+    { id: "d15", name: "Joytürk FM", url: "https://17753.live.streamtheworld.com/JOY_TURK_SC?/;", genre: "Türkçe Pop", country: "Türkiye", favicon: "", favorite: false },
+    { id: "d16", name: "Virgin Radio Türkiye", url: "https://17753.live.streamtheworld.com/VIRGIN_RADIO_SC?/;stream.mp3", genre: "Yabancı Pop, Rock", country: "Türkiye", favicon: "", favorite: false },
+    { id: "d17", name: "Best FM", url: "http://46.20.7.125:80/;", genre: "Pop", country: "Türkiye", favicon: "", favorite: false },
+    { id: "d18", name: "Alem FM", url: "https://turkmedya.radyotvonline.net/alemfmaac", genre: "Arabesk, Türkçe Pop", country: "Türkiye", favicon: "", favorite: false },
+    { id: "d19", name: "A Haber Radyo", url: "https://trkvz-radyolar.ercdn.net/ahaberradyo/playlist.m3u8", genre: "Haber", country: "Türkiye", favicon: "", favorite: false },
+    { id: "d20", name: "A Spor Radyo", url: "https://trkvz-radyolar.ercdn.net/asporradyo/playlist.m3u8", genre: "Spor", country: "Türkiye", favicon: "", favorite: false },
+    { id: "d21", name: "Kiss FM Türkiye", url: "https://topradio-de-hz-fal-stream03-cluster01.radiohost.de/kissfm-tuerkisch_aac-64", genre: "Pop", country: "Türkiye", favicon: "", favorite: false },
+    { id: "d22", name: "Açık Radyo", url: "https://acikradyo.stream.mediatriple.net/acikradyo_96.aac", genre: "Bağımsız, Kültür", country: "Türkiye", favicon: "", favorite: false },
+    { id: "d23", name: "Radyo Eksen", url: "https://listen.radioking.com/radio/eksen/stream/live", genre: "Alternatif Rock", country: "Türkiye", favicon: "", favorite: false }
   ];
 
   function normalize(list){
@@ -920,14 +987,17 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.stations));
   }
 
+  function findStation(id){ return state.stations.find(s=>s.id===id); }
+
   const state = {
     stations: loadStations(),
     activeId: null,
     isPlaying: false,
     isLoading: false,
     importPreview: [],
-    filter: "all",        // "all" | "favorites"
-    viewMode: localStorage.getItem(VIEW_KEY) || "grid", // "grid" | "list"
+    filter: "all",
+    viewMode: localStorage.getItem(VIEW_KEY) || "grid",
+    isEditMode: false,
     dragId: null
   };
 
@@ -949,51 +1019,36 @@
   const npSub = $("npSub");
   const statusLine = $("statusLine");
   const volumeSlider = $("volumeSlider");
-  const viewGridBtn = $("viewGridBtn");
-  const viewListBtn = $("viewListBtn");
 
-  const ICON_PLAY = '<path d="M8 5v14l11-7z"/>';
-  const ICON_PAUSE = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
-  const FAV_ICON = '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/>';
-
-  /* ---------------- Dial ticks (decorative) ---------------- */
-  (function buildTicks(){
-    const g = $("dialTicks");
-    if(!g) return;
-    const cx = 75, cy = 75, rOuter = 60, rInner = 52;
-    const startDeg = -215, endDeg = 35;
-    const count = 18;
-    for(let i=0;i<=count;i++){
-      const t = i / count;
-      const deg = startDeg + t*(endDeg-startDeg);
-      const rad = deg * Math.PI/180;
-      const major = i % 3 === 0;
-      const rI = major ? rInner - 4 : rInner;
-      const x1 = cx + rOuter*Math.cos(rad), y1 = cy + rOuter*Math.sin(rad);
-      const x2 = cx + rI*Math.cos(rad), y2 = cy + rI*Math.sin(rad);
-      const line = document.createElementNS("http://www.w3.org/2000/svg","line");
-      line.setAttribute("x1",x1); line.setAttribute("y1",y1);
-      line.setAttribute("x2",x2); line.setAttribute("y2",y2);
-      line.setAttribute("class","dial-tick"+(major?" major":""));
-      g.appendChild(line);
-    }
-  })();
-
-  /* ---------------- Volume & View Init ---------------- */
-  (function initPrefs(){
-    const savedVol = localStorage.getItem(VOL_KEY);
-    const v = savedVol !== null ? parseInt(savedVol,10) : 80;
-    volumeSlider.value = v;
-    audioEl.volume = v/100;
-
-    setViewMode(state.viewMode);
-  })();
-
+  // Restore saved volume
+  const savedVol = localStorage.getItem(VOL_KEY);
+  if(savedVol !== null) volumeSlider.value = savedVol;
   volumeSlider.addEventListener("input", ()=>{
-    audioEl.volume = volumeSlider.value/100;
+    audioEl.volume = volumeSlider.value / 100;
     localStorage.setItem(VOL_KEY, volumeSlider.value);
   });
 
+  // Dial ticks SVG generation
+  (function buildDialTicks(){
+    const g = $("dialTicks");
+    if(!g) return;
+    let html = "";
+    for(let i=0; i<=30; i++){
+      const angle = -135 + (i * 9);
+      const isMajor = i % 5 === 0;
+      const r1 = isMajor ? 58 : 62;
+      const r2 = 68;
+      const rad = (angle * Math.PI) / 180;
+      const x1 = 75 + r1 * Math.cos(rad);
+      const y1 = 75 + r1 * Math.sin(rad);
+      const x2 = 75 + r2 * Math.cos(rad);
+      const y2 = 75 + r2 * Math.sin(rad);
+      html += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" class="dial-tick ${isMajor?'major':''}"/>`;
+    }
+    g.innerHTML = html;
+  })();
+
+  /* ---------------- View Mode ---------------- */
   function setViewMode(mode){
     state.viewMode = mode;
     localStorage.setItem(VIEW_KEY, mode);
@@ -1003,8 +1058,15 @@
     renderList();
   }
 
-  viewGridBtn.addEventListener("click", ()=> setViewMode("grid"));
-  viewListBtn.addEventListener("click", ()=> setViewMode("list"));
+  const viewGridBtn = $("viewGridBtn");
+  const viewListBtn = $("viewListBtn");
+  if(viewGridBtn && viewListBtn){
+    viewGridBtn.classList.toggle("active", state.viewMode === "grid");
+    viewListBtn.classList.toggle("active", state.viewMode === "list");
+    stationListEl.className = "station-list view-" + state.viewMode;
+    viewGridBtn.addEventListener("click", ()=> setViewMode("grid"));
+    viewListBtn.addEventListener("click", ()=> setViewMode("list"));
+  }
 
   /* ---------------- Rendering ---------------- */
   function escapeHtml(str){
@@ -1014,8 +1076,6 @@
   function initials(name){
     return (name||"?").trim().split(/\s+/).slice(0,2).map(w=>w[0]).join("").toUpperCase();
   }
-
-  function favoriteCount(){ return state.stations.filter(s=>s.favorite).length; }
 
   function renderList(){
     const q = searchInput.value.trim().toLowerCase();
@@ -1027,10 +1087,9 @@
              (s.country||"").toLowerCase().includes(q);
     });
 
-    $("favCount").textContent = "(" + favoriteCount() + ")";
+    $("favCount").textContent = "(" + state.stations.filter(s=>s.favorite).length + ")";
     const canDrag = state.filter === "all" && !q;
-    stationCountEl.innerHTML = `<span>${state.stations.length} istasyon${q ? ` · ${filtered.length} eşleşme` : ""}</span>` +
-      (canDrag && filtered.length > 1 ? `<span class="drag-hint">· sürükle & bırak ile sırala</span>` : "");
+    stationCountEl.innerHTML = `<span>${state.stations.length} istasyon${q ? ` · ${filtered.length} eşleşme` : ""}</span>`;
 
     if(filtered.length === 0){
       const msg = state.filter === "favorites"
@@ -1040,20 +1099,33 @@
       return;
     }
 
-    const TRASH_ICON = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`;
+    const EDIT_ICON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`;
+    const TRASH_ICON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`;
+    const FAV_ICON = `<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/>`;
+    const DRAG_ICON = `<svg width="16" height="16" viewBox="0 0 24 24"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>`;
+    const CARD_PLAY_ICON = `<svg width="14" height="14" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
+    const CARD_PAUSE_ICON = `<svg width="14" height="14" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
 
     stationListEl.innerHTML = filtered.map(s=>{
       const active = s.id === state.activeId;
+      const isPlayingCurrent = active && state.isPlaying;
       const sub = [s.genre, s.country].filter(Boolean).join(" · ");
       const logoHtml = s.favicon ? `<img src="${escapeHtml(s.favicon)}" loading="lazy" onerror="this.parentElement.textContent='${initials(s.name)}'">` : initials(s.name);
+      
+      const playingBadge = active
+        ? `<span class="station-playing-badge"><span class="badge-dot"></span>${isPlayingCurrent ? "YAYINDA" : "SEÇİLDİ"}</span>`
+        : `<span style="font-size:11px; color:var(--text-faint); font-weight:500;">CANLI</span>`;
+
+      const playActionBtn = `<button class="card-play-btn" title="${isPlayingCurrent ? 'Duraklat' : 'Dinle'}" aria-label="Dinle">${isPlayingCurrent ? CARD_PAUSE_ICON : CARD_PLAY_ICON}</button>`;
+      const dragHandleHtml = canDrag ? `<div class="drag-handle" title="Tut ve sürükleyerek sırala" aria-label="Sürükle">${DRAG_ICON}</div>` : '';
 
       if(state.viewMode === "grid") {
         return `
-        <div class="station-card ${active?"active":""}" data-id="${s.id}" draggable="${canDrag}">
+        <div class="station-card ${active?"active":""} ${isPlayingCurrent?"is-playing":""}" data-id="${s.id}" draggable="${canDrag}">
           <div class="station-top">
             <div class="station-logo">${logoHtml}</div>
             <div class="station-top-actions">
-              ${canDrag ? `<span class="drag-handle" title="Sürükleyerek sırala">⠿</span>` : ""}
+              ${dragHandleHtml}
               <button class="fav-btn ${s.favorite?"is-fav":""}" data-id="${s.id}" title="${s.favorite?"Favorilerden çıkar":"Favorilere ekle"}" aria-label="Favori">
                 <svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="${s.favorite?"currentColor":"none"}">${FAV_ICON}</svg>
               </button>
@@ -1064,40 +1136,62 @@
             <div class="station-sub">${escapeHtml(sub || "Canlı Yayın")}</div>
           </div>
           <div class="station-card-footer">
-            <div class="station-playing-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${state.isPlaying && active?'var(--green)':'var(--amber)'}" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
-            </div>
-            <button class="btn btn-ghost btn-danger remove-btn" data-id="${s.id}" title="İstasyonu Sil" aria-label="Sil">
-              ${TRASH_ICON}
-            </button>
+            ${playingBadge}
+            ${state.isEditMode ? `
+            <div style="display:flex; gap:4px;">
+              <button class="btn btn-ghost edit-btn" data-id="${s.id}" title="İstasyonu Düzenle" aria-label="Düzenle">
+                ${EDIT_ICON}
+              </button>
+              <button class="btn btn-ghost btn-danger remove-btn" data-id="${s.id}" title="İstasyonu Sil" aria-label="Sil">
+                ${TRASH_ICON}
+              </button>
+            </div>` : playActionBtn}
           </div>
         </div>`;
       } else {
         return `
-        <div class="station-card ${active?"active":""}" data-id="${s.id}" draggable="${canDrag}">
-          ${canDrag ? `<div class="drag-handle" title="Sürükleyerek sırala">⠿</div>` : ""}
+        <div class="station-card ${active?"active":""} ${isPlayingCurrent?"is-playing":""}" data-id="${s.id}" draggable="${canDrag}">
+          ${dragHandleHtml}
           <div class="station-logo">${logoHtml}</div>
           <div class="station-meta">
             <div class="station-name">${escapeHtml(s.name)}</div>
             <div class="station-sub">${escapeHtml(sub || "Canlı Yayın")}</div>
           </div>
-          <div class="station-playing-icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${state.isPlaying && active?'var(--green)':'var(--amber)'}" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
-          </div>
+          ${playingBadge}
           <button class="btn btn-ghost fav-btn ${s.favorite?"is-fav":""}" data-id="${s.id}" title="${s.favorite?"Favorilerden çıkar":"Favorilere ekle"}" aria-label="Favori">
             <svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="${s.favorite?"currentColor":"none"}">${FAV_ICON}</svg>
           </button>
-          <div class="station-actions">
+          ${state.isEditMode ? `
+          <div class="station-actions" style="display:flex; gap:4px;">
+            <button class="btn btn-ghost edit-btn" data-id="${s.id}" title="Düzenle" aria-label="Düzenle">
+              ${EDIT_ICON}
+            </button>
             <button class="btn btn-ghost btn-danger remove-btn" data-id="${s.id}" title="Sil" aria-label="Kaldır">
               ${TRASH_ICON}
             </button>
-          </div>
+          </div>` : playActionBtn}
         </div>`;
       }
     }).join("");
   }
 
   stationListEl.addEventListener("click", (e)=>{
+    const cardPlayBtn = e.target.closest(".card-play-btn");
+    if(cardPlayBtn){
+      e.stopPropagation();
+      const card = e.target.closest(".station-card");
+      if(card){
+        if(card.dataset.id === state.activeId) togglePlay();
+        else playStation(card.dataset.id);
+      }
+      return;
+    }
+    const editBtn = e.target.closest(".edit-btn");
+    if(editBtn){
+      e.stopPropagation();
+      openEditModal(editBtn.dataset.id);
+      return;
+    }
     const removeBtn = e.target.closest(".remove-btn");
     if(removeBtn){
       e.stopPropagation();
@@ -1114,13 +1208,12 @@
     if(card) playStation(card.dataset.id);
   });
 
-  /* ---- Drag to reorder (in List view) ---- */
+  /* ---- Drag to reorder ---- */
   stationListEl.addEventListener("dragstart", (e)=>{
     const card = e.target.closest(".station-card");
     if(!card || card.getAttribute("draggable") !== "true") return;
     state.dragId = card.dataset.id;
     card.classList.add("dragging");
-    e.dataTransfer.effectAllowed = "move";
   });
   stationListEl.addEventListener("dragend", (e)=>{
     const card = e.target.closest(".station-card");
@@ -1178,22 +1271,104 @@
     updateNpFavButton();
   }
 
-  function removeStation(id){
-    state.stations = state.stations.filter(s=>s.id!==id);
-    if(state.activeId === id) stopPlayback();
-    saveStations();
-    renderList();
+  /* ---------------- Custom Confirmation Modal ---------------- */
+  const confirmOverlay = $("confirmOverlay");
+  const confirmTitle = $("confirmTitle");
+  const confirmDesc = $("confirmDesc");
+  const okConfirmBtn = $("okConfirmBtn");
+  const cancelConfirmBtn = $("cancelConfirmBtn");
+  const closeConfirmModal = $("closeConfirmModal");
+
+  const WARNING_ICON = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+
+  function showConfirmModal({ title, message, confirmText = "Sil" }){
+    return new Promise((resolve)=>{
+      confirmTitle.innerHTML = `${WARNING_ICON} ${escapeHtml(title || "Silme Onayı")}`;
+      confirmDesc.textContent = message;
+      okConfirmBtn.textContent = confirmText;
+      confirmOverlay.classList.add("open");
+
+      function cleanup(result){
+        confirmOverlay.classList.remove("open");
+        okConfirmBtn.removeEventListener("click", onOk);
+        cancelConfirmBtn.removeEventListener("click", onCancel);
+        closeConfirmModal.removeEventListener("click", onCancel);
+        confirmOverlay.removeEventListener("click", onOverlay);
+        resolve(result);
+      }
+
+      function onOk(){ cleanup(true); }
+      function onCancel(){ cleanup(false); }
+      function onOverlay(e){ if(e.target === confirmOverlay) cleanup(false); }
+
+      okConfirmBtn.addEventListener("click", onOk);
+      cancelConfirmBtn.addEventListener("click", onCancel);
+      closeConfirmModal.addEventListener("click", onCancel);
+      confirmOverlay.addEventListener("click", onOverlay);
+    });
   }
 
-  function clearAllStations(){
+  async function removeStation(id){
+    const station = findStation(id);
+    if(!station) return;
+    const confirmed = await showConfirmModal({
+      title: "İstasyon Silme",
+      message: `"${station.name}" istasyonunu listeden silmek istediğinize emin misiniz?`
+    });
+    if(confirmed){
+      state.stations = state.stations.filter(s=>s.id!==id);
+      if(state.activeId === id) stopPlayback();
+      saveStations();
+      renderList();
+    }
+  }
+
+  async function clearAllStations(){
     if(state.stations.length===0) return;
-    if(confirm("Tüm istasyon listesi silinsin mi? Bu işlem geri alınamaz.")){
+    const confirmed = await showConfirmModal({
+      title: "Tüm İstasyonları Sil",
+      message: "Tüm radyo istasyonu listesi silinecektir. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?"
+    });
+    if(confirmed){
       state.stations = [];
       stopPlayback();
       saveStations();
       renderList();
     }
   }
+
+  /* ---------------- Export Functionality ---------------- */
+  function exportStationsJSON(){
+    if(!state.stations || state.stations.length === 0){
+      alert("Dışarı aktarılacak istasyon bulunamadı.");
+      return;
+    }
+    const cleanList = state.stations.map(s => ({
+      name: s.name,
+      url: s.url,
+      genre: s.genre || "",
+      country: s.country || "",
+      favicon: s.favicon || "",
+      favorite: !!s.favorite
+    }));
+
+    const jsonStr = JSON.stringify(cleanList, null, 2);
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `frekans-radyo-listesi-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  const menuExportJSON = $("menuExportJSON");
+  if(menuExportJSON) menuExportJSON.addEventListener("click", () => {
+    settingsDropdown.classList.remove("open");
+    exportStationsJSON();
+  });
 
   /* ---------------- Settings Dropdown Menu ---------------- */
   const settingsWrap = $("settingsWrap");
@@ -1205,23 +1380,32 @@
       e.stopPropagation();
       settingsDropdown.classList.toggle("open");
     });
-
     document.addEventListener("click", (e)=>{
-      if(settingsWrap && !settingsWrap.contains(e.target)){
-        settingsDropdown.classList.remove("open");
-      }
+      if(settingsWrap && !settingsWrap.contains(e.target)) settingsDropdown.classList.remove("open");
     });
+
+    const menuToggleEdit = $("menuToggleEdit");
+    const menuToggleEditLabel = $("menuToggleEditLabel");
+    if(menuToggleEdit){
+      menuToggleEdit.addEventListener("click", ()=>{
+        state.isEditMode = !state.isEditMode;
+        if(menuToggleEditLabel){
+          menuToggleEditLabel.textContent = state.isEditMode ? "Düzenleme Modunu Kapat" : "Düzenleme Modunu Aç";
+        }
+        menuToggleEdit.classList.toggle("active", state.isEditMode);
+        settingsDropdown.classList.remove("open");
+        renderList();
+      });
+    }
 
     $("menuAddManual").addEventListener("click", ()=>{
       settingsDropdown.classList.remove("open");
       openModal("manual");
     });
-
     $("menuAddImport").addEventListener("click", ()=>{
       settingsDropdown.classList.remove("open");
       openModal("import");
     });
-
     $("menuClearAll").addEventListener("click", ()=>{
       settingsDropdown.classList.remove("open");
       clearAllStations();
@@ -1229,8 +1413,6 @@
   }
 
   /* ---------------- Playback ---------------- */
-  function findStation(id){ return state.stations.find(s=>s.id===id); }
-
   function setStatus(msg, isError){
     statusLine.textContent = msg || "";
     statusLine.classList.toggle("error", !!isError);
@@ -1239,30 +1421,31 @@
   function playStation(id){
     const station = findStation(id);
     if(!station) return;
-
     state.activeId = id;
     state.isLoading = true;
     updateNowPlaying(station);
     setStatus("Bağlanılıyor…");
-
     audioEl.src = station.url;
     audioEl.volume = volumeSlider.value/100;
     playBtn.disabled = false;
     stopBtn.disabled = false;
     playBtn.classList.add("loading");
-
     const playPromise = audioEl.play();
     if(playPromise && playPromise.catch){
       playPromise.catch(err=>{
         state.isLoading = false;
         state.isPlaying = false;
         playBtn.classList.remove("loading");
-        setStatus("Yayına bağlanılamadı. Bağlantıyı ve CORS ayarlarını kontrol et.", true);
+        setStatus("Yayına bağlanılamadı.", true);
         updateTransportUI();
       });
     }
     renderList();
   }
+
+  const ICON_PLAY = `<path d="M8 5v14l11-7z"/>`;
+  const ICON_PAUSE = `<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>`;
+  const FAV_ICON = `<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/>`;
 
   audioEl.addEventListener("playing", ()=>{
     state.isPlaying = true; state.isLoading = false;
@@ -1270,9 +1453,6 @@
     setStatus("");
     updateTransportUI();
     renderList();
-  });
-  audioEl.addEventListener("waiting", ()=>{
-    setStatus("Arabelleğe alınıyor…");
   });
   audioEl.addEventListener("pause", ()=>{
     state.isPlaying = false;
@@ -1282,19 +1462,15 @@
   audioEl.addEventListener("error", ()=>{
     state.isPlaying = false; state.isLoading = false;
     playBtn.classList.remove("loading");
-    setStatus("Yayına ulaşılamıyor. URL geçersiz olabilir veya yayın kapalı.", true);
+    setStatus("Yayına ulaşılamıyor.", true);
     updateTransportUI();
     renderList();
   });
 
   function togglePlay(){
     if(!state.activeId) return;
-    if(state.isPlaying){
-      audioEl.pause();
-    }else{
-      const p = audioEl.play();
-      if(p && p.catch) p.catch(()=> setStatus("Yayına bağlanılamadı.", true));
-    }
+    if(state.isPlaying) audioEl.pause();
+    else audioEl.play().catch(()=> setStatus("Yayına bağlanılamadı.", true));
   }
 
   function stopPlayback(){
@@ -1342,26 +1518,50 @@
     npFavBtn.disabled = !station;
     const isFav = !!(station && station.favorite);
     npFavBtn.classList.toggle("is-fav", isFav);
-    npFavBtn.setAttribute("aria-label", isFav ? "Favorilerden çıkar" : "Favorilere ekle");
   }
   npFavBtn.addEventListener("click", ()=>{
     if(!state.activeId) return;
     toggleFavorite(state.activeId);
   });
 
-  /* ---------------- Modal: add / import ---------------- */
+  /* ---------------- Modal: add / edit / import ---------------- */
   const modalOverlay = $("modalOverlay");
   const tabManual = $("tabManual"), tabImport = $("tabImport");
   const panelManual = $("panelManual"), panelImport = $("panelImport");
   const confirmManual = $("confirmManual"), confirmImport = $("confirmImport");
+  const modalTabs = $("modalTabs");
+  const modalTitle = $("modalTitle");
 
   function openModal(which = "manual"){
+    $("editStationId").value = "";
+    modalTitle.textContent = "İstasyon Ekle";
+    confirmManual.textContent = "İstasyonu Ekle";
+    modalTabs.style.display = "flex";
     modalOverlay.classList.add("open");
     switchTab(which);
   }
+
+  function openEditModal(id){
+    const station = findStation(id);
+    if(!station) return;
+    $("editStationId").value = station.id;
+    $("manualName").value = station.name || "";
+    $("manualUrl").value = station.url || "";
+    $("manualGenre").value = station.genre || "";
+    $("manualCountry").value = station.country || "";
+    $("manualLogo").value = station.favicon || "";
+    
+    modalTitle.textContent = "İstasyonu Düzenle";
+    confirmManual.textContent = "Kaydet";
+    modalTabs.style.display = "none";
+    
+    modalOverlay.classList.add("open");
+    switchTab("manual");
+  }
+
   function closeModalFn(){
     modalOverlay.classList.remove("open");
-    ["manualName","manualUrl","manualGenre","manualCountry","manualLogo","importUrl"].forEach(id=> {
+    ["manualName","manualUrl","manualGenre","manualCountry","manualLogo","importUrl","editStationId"].forEach(id=> {
       const el = $(id); if(el) el.value = "";
     });
     $("manualMsg").innerHTML = "";
@@ -1371,8 +1571,6 @@
     state.importPreview = [];
   }
 
-  const openAddModal = $("openAddModal");
-  if(openAddModal) openAddModal.addEventListener("click", () => openModal("manual"));
   $("closeModal").addEventListener("click", closeModalFn);
   $("cancelModal").addEventListener("click", closeModalFn);
   modalOverlay.addEventListener("click", (e)=>{ if(e.target===modalOverlay) closeModalFn(); });
@@ -1397,6 +1595,7 @@
   }
 
   confirmManual.addEventListener("click", ()=>{
+    const editId = $("editStationId").value;
     const name = $("manualName").value.trim();
     const url = $("manualUrl").value.trim();
     const genre = $("manualGenre").value.trim();
@@ -1409,10 +1608,30 @@
       return;
     }
     if(!isLikelyUrl(url)){
-      msgEl.innerHTML = `<div class="modal-msg error">Geçerli bir URL gir (http:// veya https:// ile başlamalı).</div>`;
+      msgEl.innerHTML = `<div class="modal-msg error">Geçerli bir URL gir.</div>`;
       return;
     }
-    state.stations.push({ id: genId(), name, url, genre, country, favicon: logo });
+
+    if(editId){
+      const station = findStation(editId);
+      if(station){
+        station.name = name;
+        station.url = url;
+        station.genre = genre;
+        station.country = country;
+        station.favicon = logo;
+        if(state.activeId === editId){
+          updateNowPlaying(station);
+          if(state.isPlaying){
+            audioEl.src = station.url;
+            audioEl.play().catch(() => setStatus("Yayına bağlanılamadı.", true));
+          }
+        }
+      }
+    } else {
+      state.stations.push({ id: genId(), name, url, genre, country, favicon: logo, favorite: false });
+    }
+
     saveStations();
     renderList();
     closeModalFn();
@@ -1428,7 +1647,8 @@
     if(Array.isArray(genre)) genre = genre.join(", ");
     const country = raw.country || raw.country_name || raw.countryName || "";
     const favicon = raw.favicon || raw.logo || raw.image || raw.icon || "";
-    return { id: genId(), name: String(name), url: String(url), genre: String(genre), country: String(country), favicon: String(favicon||"") };
+    const favorite = !!raw.favorite;
+    return { id: genId(), name: String(name), url: String(url), genre: String(genre), country: String(country), favicon: String(favicon||""), favorite };
   }
 
   function findArrayInJson(data){
@@ -1450,12 +1670,8 @@
     previewEl.innerHTML = "";
     state.importPreview = [];
 
-    if(!url){
-      msgEl.innerHTML = `<div class="modal-msg error">Lütfen bir GitHub raw JSON adresi gir.</div>`;
-      return;
-    }
-    if(!isLikelyUrl(url)){
-      msgEl.innerHTML = `<div class="modal-msg error">Geçersiz URL.</div>`;
+    if(!url || !isLikelyUrl(url)){
+      msgEl.innerHTML = `<div class="modal-msg error">Geçerli bir JSON adresi gir.</div>`;
       return;
     }
 
@@ -1467,13 +1683,13 @@
       if(!res.ok) throw new Error("HTTP " + res.status);
       const data = await res.json();
       const arr = findArrayInJson(data);
-      if(!arr) throw new Error("JSON içinde istasyon dizisi bulunamadı.");
+      if(!arr) throw new Error("JSON içinde istasyon bulunamadı.");
 
       const normalized = arr.map(normalizeEntry).filter(Boolean);
-      if(normalized.length === 0) throw new Error("Tanınan alanlarla eşleşen istasyon bulunamadı.");
+      if(normalized.length === 0) throw new Error("İstasyon bulunamadı.");
 
       state.importPreview = normalized;
-      msgEl.innerHTML = `<div class="modal-msg ok">${normalized.length} istasyon bulundu. Eklemek istediklerini seç.</div>`;
+      msgEl.innerHTML = `<div class="modal-msg ok">${normalized.length} istasyon bulundu.</div>`;
       previewEl.style.display = "block";
       previewEl.innerHTML = normalized.map((s,i)=>`
         <label class="preview-item">
@@ -1490,15 +1706,11 @@
   });
 
   confirmImport.addEventListener("click", ()=>{
-    if(!state.importPreview.length){
-      $("importMsg").innerHTML = `<div class="modal-msg error">Önce bir JSON adresi getir.</div>`;
-      return;
-    }
     const checks = document.querySelectorAll(".pi-check");
     const selected = [];
     checks.forEach(c=>{ if(c.checked) selected.push(state.importPreview[parseInt(c.dataset.i,10)]); });
     if(selected.length===0){
-      $("importMsg").innerHTML = `<div class="modal-msg error">En az bir istasyon seç.</div>`;
+      $("importMsg").innerHTML = `<div class="modal-msg error">Seçim yap.</div>`;
       return;
     }
     state.stations.push(...selected);
