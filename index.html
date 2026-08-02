@@ -58,7 +58,7 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    padding-bottom: var(--player-height);
+    padding-bottom: calc(var(--player-height) + 48px);
   }
 
   /* ---------- Header / Top Bar ---------- */
@@ -670,33 +670,57 @@
 
   /* ---------- RESPONSIVE MOBILE MEDIA QUERIES ---------- */
   @media (max-width: 860px){
-    .app-container { padding-bottom: 120px; }
+    :root { --player-height: 72px; }
+    .app-container { padding-bottom: calc(var(--player-height) + 40px); }
     .header { padding: 12px 16px; flex-wrap: wrap; }
     .header-actions { max-width: 100%; width: 100%; order: 2; }
     .brand-mark { order: 1; }
-    .main-content { padding: 16px; gap: 16px; }
+    .main-content { padding: 14px 16px; gap: 14px; padding-bottom: 90px; }
     
     .player-bar {
-      height: auto;
-      min-height: 100px;
-      padding: 12px 16px;
-      flex-wrap: wrap;
-      justify-content: space-between;
+      height: 72px;
+      min-height: 72px;
+      padding: 0 16px;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 10px;
     }
-    .player-left { width: 100%; max-width: 100%; min-width: 0; order: 1; margin-bottom: 4px; }
-    .player-center { flex: 1; order: 2; align-items: flex-start; }
-    .player-right { flex: none; order: 3; gap: 8px; min-width: 0; }
-    .volume input[type=range] { width: 70px; }
-    .dial-wrap { display: none; } /* Hide dial on mobile to save space */
+    .player-left { flex: 1; min-width: 0; max-width: none; gap: 10px; margin-bottom: 0; }
+    .np-logo { width: 40px; height: 40px; border-radius: 8px; font-size: 13px; }
+    .dial-wrap { display: none !important; }
+    .np-name { font-size: 13.5px; }
+    .np-sub { font-size: 11px; }
+
+    .player-center { flex: none; max-width: none; flex-direction: row; gap: 8px; }
+    .play-btn { width: 40px; height: 40px; }
+    .play-btn svg { width: 16px; height: 16px; }
+    .stop-btn { width: 32px; height: 32px; }
+    .eq { display: none; }
+    .status-line { display: none; }
+
+    .player-right { flex: none; min-width: 0; gap: 6px; }
+    .volume { display: none; }
+    .np-fav-btn { width: 34px; height: 34px; }
+    .np-fav-btn svg { width: 16px; height: 16px; }
   }
 
   @media (max-width: 520px){
-    .controls-bar { flex-direction: column; align-items: stretch; gap: 12px; }
+    :root { --player-height: 66px; }
+    .app-container { padding-bottom: calc(var(--player-height) + 40px); }
+    .player-bar { height: 66px; min-height: 66px; padding: 0 12px; gap: 8px; }
+    .player-left { gap: 8px; }
+    .np-logo { width: 36px; height: 36px; border-radius: 6px; }
+    .np-name { font-size: 13px; }
+    .np-sub { font-size: 10.5px; }
+    .play-btn { width: 36px; height: 36px; }
+    .stop-btn { width: 28px; height: 28px; }
+    .np-fav-btn { width: 30px; height: 30px; }
+
+    .controls-bar { flex-direction: column; align-items: stretch; gap: 10px; }
     .controls-right { justify-content: space-between; width: 100%; }
     .station-list.view-grid {
       grid-template-columns: 1fr;
     }
-    .player-right .volume { display: none; }
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -1526,13 +1550,16 @@
     npName.textContent = station.name;
     npSub.textContent = [station.genre, station.country].filter(Boolean).join(" · ") || station.url;
 
-    if(station.favicon && npLogo && dialWrap){
-      npLogo.innerHTML = `<img src="${escapeHtml(station.favicon)}" alt="${escapeHtml(station.name)}" onerror="this.parentElement.style.display='none'; document.getElementById('dialWrap').style.display='block';">`;
+    if(npLogo && dialWrap){
+      if(station.favicon){
+        npLogo.innerHTML = `<img src="${escapeHtml(station.favicon)}" alt="${escapeHtml(station.name)}" onerror="this.parentElement.textContent='${initials(station.name)}'">`;
+      } else {
+        npLogo.textContent = initials(station.name);
+      }
       npLogo.style.display = "flex";
-      dialWrap.style.display = "none";
-    } else {
-      if(npLogo) npLogo.style.display = "none";
-      if(dialWrap) dialWrap.style.display = "block";
+      // Mobilde dial (kadran) gizlenebilir ama masaüstünde logonun yanında kadran da durabilir.
+      const isMobile = window.innerWidth <= 860;
+      dialWrap.style.display = isMobile ? "none" : "block";
     }
 
     updateNpFavButton();
